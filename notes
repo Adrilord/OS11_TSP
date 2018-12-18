@@ -1,0 +1,60 @@
+c_p = 800, c_c = 1200
+
+partie 1 :
+durée de vie
+ 
+a)
+
+-> exponentielle -> mélange p1*lambda1*exp(-lambda1*t) + (1-p1)*lambda2*exp(-lambda2*t) 
+-> Weibull
+-> lognormale
+-> Inverse Gaussienne
+-> Gamma
+
+Tests visuels et d'adéquation de loi (Goodness_of_fit)
+
+b)
+-> trouver les paramètres de la loi (déjà obtenu pour les tests d'adéquation)
+
+c)
+-> calcul théorique de la fonction coût/objective (dépend de t_0 et convexe)
+
+
+d)
+-> optimisation de la fonction objective
+
+partie 2 :
+dégradation
+
+Processus : Gamma, Wiener, Gamma+Wiener
+
+X(t)-X(s) = delta X(t-s) \sim Ga( alpha*(t-s), beta_0)
+ou
+X(t)-X(s) = delta X(t-s) \sim N( mu * (t-s), sigma(t-s)^2)
+
+a)
+pas de temps de 800 => regarder les accroissements qui doivent suivre une même
+loi N ou Ga -> à déterminer
+
+b) déterminer les paramètres du modèle
+
+c) calcul (numériquement (simulation Monte Carlo) ou analytique) du coût de la poilitique en fonction de deltaT et M
+X=0; C=0;
+While X < M
+ X=X+gamrnd(alpha * deltaT, Beta)
+ C(i) = C(i) + CI
+ if ( X < L et X >= M ) then
+   C(i) = C(i) + Cp
+   k = k + 1
+ else
+   C(i) = C + Cc
+ end
+T(i) = k * deltaT
+end
+EC=mean(C)
+ES=mean(T)
+
+
+d) optimiser et trouver deltaT et M optimaux
+
+degrad max -> L= 20
