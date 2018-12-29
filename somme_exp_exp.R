@@ -5,26 +5,40 @@ pannes = read.csv(
     dec = ".",
     colClasses = c("NULL", NA)
 );
-data = pannes$Heures;
-h = hist(
-    data,
-    breaks = 20
-);
+scale = 1000;
+data = pannes$Heures / scale;
 N = length(data);
 library(stats4);
-le = function(
+nle_expExp = function(
     lambda
    , muy
 ) {
-    N * log(lambda) + N * log(muy)
+    -(N * log(lambda) + N * log(muy)
        + sum(log(
            (exp(-lambda * data) - exp(-muy * data))
            / (muy - lambda)
-           ));
+           )));
 }
-f = function(x) {
-    N * log(x[1]) + N * log(x[2])
-    + sum(log(
-        (exp(-x[1] * data) - exp(-x[2] * data)) / (x[2] - x[1])
-        ));
+# fitting
+fit_expExp = mle(nle_expExp,
+          start = list(
+              lambda = 2,
+              muy = 1
+          ));
+summary(fit_expExp);
+lambda = fit_expExp@fullcoef["lambda"];
+muy = fit_expExp@fullcoef["muy"];
+f_expExp = function(x) {
+    lambda * muy * (exp(-lambda * x) - exp(-muy * x)) / (muy - lambda);
 }
+hist(
+    data,
+    breaks = 40,
+    probability = TRUE
+);
+curve(f_expExp,
+      add = TRUE,
+      col = "blue",
+      from = min(data),
+      to = max(data)
+      );
