@@ -1,0 +1,34 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{mathrsfs}
+\usepackage{url}
+\author{\textsc{TRAN Quoc Nhat Han} \& \textsc{Adriene WARTELLE}}
+\title{Rapport de projet OS13\\Analyse de politique de maintenance}
+\date{\today}
+\begin{document}
+\maketitle
+\renewcommand{\contentsname}{Sommaire}
+\tableofcontents
+\begin{abstract}
+Soient des données liées à la fonctionnement de système, nous déterminons un modèle approprié et puis choisir une politique de maintenance optimal.
+\end{abstract}
+\section{Maintenance basant sur l'âge}
+\subsection{Rappel}
+Considérons un système non maintenu. En l'observant, nous obtenons un liste des dates de panne, grâce auquel nous construirerons une politique de remplacement systématique basée sur l'âge : \emph{Nous remplaçons lorsque le système tombe en panne ou qu'il survit une durée $t_0$}.
+
+Le but est de minimiser le coût moyen cumulé.
+\begin{equation}
+    \label{coutmoy}
+    \mathbb{E}(C) = \frac{\mathbb{E}(C(S))}{\mathbb{E}(S)}
+\end{equation}
+
+Où $S$ est la variable aléatoire représentant la date de remplacement et $C(S)$ est le coût de maintenance cumulé à l'instant $S$ (sachant que $C(S)$ est $c_c$ si une maintenance corrective et $c_p$ si préventive).
+\subsection{Modéliser la durée de vie du système}
+\end{document}

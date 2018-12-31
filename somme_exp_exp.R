@@ -31,10 +31,10 @@ muy = fit_expExp@fullcoef["muy"];
 f_expExp = function(x) {
     lambda * muy * (exp(-lambda * x) - exp(-muy * x)) / (muy - lambda);
 }
-hist(
-    data,
-    breaks = 40,
-    probability = TRUE
+h_expExp = hist(data,
+                breaks = 40,
+                probability = TRUE,
+                main = "Fitting Exp + Exp"
 );
 curve(f_expExp,
       add = TRUE,
