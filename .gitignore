@@ -49,3 +49,4 @@ vignettes/*.pdf
 *.cb2
 .*.lb
 __latexindent_temp.tex
+*.synctex.gz
