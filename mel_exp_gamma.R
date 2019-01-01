@@ -17,17 +17,6 @@ F_melExpGamma = function(x, theta = theta_melExpGamma) {
 }
 
 # Fitting distribution
-
-epsilon = list(
-    alpha = 1e-4,
-    theta = 1e-4
-)
-zeta = matrix(
-    0,
-    nrow = 2,
-    ncol = N
-)
-
 library(stats4)
 nle_melExpGamma = function(
     p,
