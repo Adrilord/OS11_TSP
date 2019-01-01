@@ -10,6 +10,8 @@
 \usepackage{mathrsfs}
 \usepackage{color}
 \usepackage{url}
+\usepackage{hyperref}
+\usepackage{cleveref}
 \usepackage{listings}
 \lstset{
 language=R,
@@ -66,12 +68,12 @@ Le but est de minimiser le coût moyen cumulé.
 
 Où $S$ est la variable aléatoire représentant la date de remplacement et $C(S)$ est le coût de maintenance cumulé à l'instant $S$ (sachant que $C(S)$ est $c_c$ si une maintenance corrective et $c_p$ si préventive).
 \subsection{Modéliser la durée de vie du système}
-L'importation de données nous montre que les dates de pannes sont de l'ordre grandement variée ($300$ à $27000$). Exponentiel des valeurs extrèmes résulteront $Inf$, ce qui est indésirable. Alors nous devons forcément les réduire en les divisant par un scalaire \texttt{scale}, prenons par example $1000$. (Figure \ref{histo1})
+L'importation de données (l'annexe \ref{annexe:import_pannes}) nous montre que les dates de pannes sont de l'ordre grandement variée ($300$ à $27000$) (l'annexe \ref{annexe:premier_histo}). Exponentiel des valeurs extrèmes résulteront $Inf$, ce qui est indésirable. Alors nous devons forcément les réduire en les divisant par un scalaire \texttt{scale}, prenons par example $1000$.  (Figure \ref{histo1})
 \begin{figure}[!htb]
     \centering
-    \label{histo1}
     \includegraphics[width=\textwidth]{premier_histo.png}
     \caption{Le premier histogramme de distribution de pannes}
+    \label{histo1}
 \end{figure}
 
 Les pannes se concentrent autour de 2 sommets, l'un à $[0; 0,5]$ et l'autre à $[4,5; 5]$. Ceci nous fait penser naturellement à un mixage de deux lois.
@@ -123,13 +125,13 @@ Pour $\beta$ :
     \Leftrightarrow \beta & = \alpha \frac{{\sum\limits_{i = 1}^N {{\zeta _{2i}}} }}{{\sum\limits_{i = 1}^N {{\zeta _{2i}}{x_i}} }}
 \end{align}
 
-Pour $\alpha$, le calcul devient tellement difficile que la démonstration ici ne sera pas suffisante. Nous n'écrivons que le résultat approximatif de Newton-Rashphon : Fixer un entier non nul $n_r$ indiquant le nombre d'itération :
+Pour $\alpha$, le calcul devient tellement difficile que la démonstration ici ne sera pas suffisante. Nous n'écrivons que le formule itératif de Newton-Rashphon \cite{gamma} :
 \begin{equation}
     \label{alpha}
-    {\alpha _{r + 1}} = {\alpha _r} - \frac{{\ln \left( {{\alpha _r}} \right) - \Psi \left( {{\alpha _r}} \right) - \ln \left( {\frac{{\sum\limits_{i = 1}^N {{\zeta _{2i}}{x_i}} }}{{\sum\limits_{i = 1}^N {{\zeta _{2i}}} }}} \right) + \frac{{\sum\limits_{i = 1}^N {{\zeta _{2i}}\ln \left( {{x_i}} \right)} }}{{\sum\limits_{i = 1}^N {{\zeta _{2i}}} }}}}{{\frac{1}{{{\alpha _r}}} - \Psi '\left( {{\alpha _r}} \right)}}
+    \frac{1}{{{\alpha _{r + 1}}}} = \frac{1}{{{\alpha _r}}} + \frac{{\ln \left( {{\alpha _r}} \right) - \Psi \left( {{\alpha _r}} \right) - c}}{{a_r^2\left( {\frac{1}{{{\alpha _r}}} - \Psi '\left( {{\alpha _r}} \right)} \right)}}
 \end{equation}
 
-Où $\Psi$ et $\Psi'$ sont les fonctions digamma et trigamma dans l'ordre.
+Où $c = \ln \left( {\frac{{\sum\limits_{i = 1}^N {{\zeta _{2i}}{x_i}} }}{{\sum\limits_{i = 1}^N {{\zeta _{2i}}} }}} \right) - \frac{{\sum\limits_{i = 1}^N {{\zeta _{2i}}\ln \left( {{x_i}} \right)} }}{{\sum\limits_{i = 1}^N {{\zeta _{2i}}} }}$; $\Psi$ et $\Psi'$ sont les fonctions digamma et trigamma dans l'ordre. L'itération part avec ${\alpha _0} = \frac{{0.5}}{c}$.
 
 Et puis, pour $p_k$:
 \begin{equation}
@@ -137,42 +139,38 @@ Et puis, pour $p_k$:
     {p_k} = \frac{{\sum\limits_{i = 1}^N {{\zeta _{ki}}} }}{N}\forall k = \overline {1,2}
 \end{equation}
 
-
 Etant donné \eqref{lambda}, \eqref{beta}, \eqref{alpha} et \eqref{p}, nous définissons l'algorithme EM :
 \begin{enumerate}
     \item \textbf{Initialisation :} Choisir un $\theta_{vieux}$.
     \item \textbf{Etape E :} Evaluer $(\zeta_{ki})$ sachant $\theta_{vieux}$.
     \item \textbf{Etape M :} Calculer $\theta_{nouveau}$ à l'aide des équations \eqref{lambda}, \eqref{beta}, \eqref{alpha} et \eqref{p}. \\
-    \emph{Note :} Pour $alpha$, l'itération se termine quand $\left| {{\alpha _{r + 1}} - {\alpha _r}} \right| < {\varepsilon_\alpha }$ avec $\varepsilon_\alpha$ est un réel positif fixé à l'initialisation.
-    \item \textbf{Evaluation :} Si $\left| {{\theta _{nouveau}} - {\theta_{vieux}}} \right| < {\varepsilon _\theta }$ ($\varepsilon_\theta$ est un réel positif fixé à l'initialisation), l'algorithme finit et $\theta = \theta_{vieux}$. \\ Sinon, reviens à l'étape E avec $\theta_{vieux} \leftarrow \theta_{nouveau}$.
+    \emph{Note :} Pour $\alpha$, l'itération se termine quand $\left| {{\alpha _{r + 1}} - {\alpha _r}} \right| < {\varepsilon_\alpha }$ où $\varepsilon_\alpha$ est un réel positif fixé à l'initialisation.
+    \item \textbf{Evaluation :} Si $\left| {{\theta _{nouveau}} - {\theta_{vieux}}} \right| < {\varepsilon _\theta }$ ($\varepsilon_\theta$ est un réel positif fixé à l'initialisation), l'algorithme s'arrête et $\theta = \theta_{vieux}$. \\ Sinon, reviens à l'étape E avec $\theta_{vieux} \leftarrow \theta_{nouveau}$.
 \end{enumerate}
 
+Basé sur le résultat obtenu, nous traçons la fonction de densité $f_\theta$ trouvé (figure \ref{mixage}) et réalisons un test de Kolmogorov-Smirnov. $p-value=0,9663111$ signifie $96,63\%$ de nous tromper si nous rejetons ce modèle. Nous acceptons donc le modèle trouvé. Le code est trouvable à l'annexe \ref{annexe:em_exp_gamma}.
 
-
-Nous définissons ensuite la fonction de vraisemblance négative et utilisons la méthode MLE (implémentée dans le package \emph{stats4}). Puisque les valeurs sont bornées ($p \in ]0;1[;\,\lambda > 0;\,\alpha > 0;\,\beta > 0$), il nous faillait spécifier l'approche \emph{L-BFGS-B}. Le code complet se trouve à l'annexe.
-
-Malheuresement, le message d'erreur
-\begin{verbatim}
-  Error in solve.default(oout$hessian) : 
-    Lapack routine dgesv: system is exactly singular: U[2,2] = 0
-\end{verbatim}
-
-indique que les valeurs initiales, qui sont critiques pour cette méthode, étaient mal choisies en l'absence de théorèmes appropriés.
-
-Nous devons passer à un mixage plus simple de deux lois Exponentielles. Prenons le cas où les deux coefficients d'intensité sont \textbf{différents}, car sinon nous retombe à la loi Exponentielle, qui est définitivement inappropriée.
-
-La fonction de densité avec le paramètre $\theta = (p, \lambda, \mu)$ :
-\begin{equation}
-    \label{fMelExpExp}
-    {f_\theta }\left( x \right) = p\lambda {e^{\lambda x}} + \left( {1 - p} \right)\mu {e^{\mu x}}
-\end{equation}
-
+\begin{figure}[!hbt]
+    \centering
+    \includegraphics[width=\textwidth]{EM_Exp_Gamma.png}
+    \caption{Mixage de la loi Exponentielle et Gamma}
+    \label{mixage}
+\end{figure}
 
 \section{Annexe}
 \subsection{L'importation de données de pannes}
+\label{annexe:import_pannes}
 \lstinputlisting[language=R]{import_failures.R}
 \subsection{Le premier histogramme de distribution de pannes}
+\label{annexe:premier_histo}
 \lstinputlisting[language=R]{premier_histo.R}
 \subsection{Estimer le mixage de la loi Exponentielle et Gamma}
-\lstinputlisting[language=R]{mel_exp_gamma.R}
+\label{annexe:em_exp_gamma}
+\lstinputlisting[language=R]{EM_Exp_Gamma.R}
+
+\begin{thebibliography}{9}
+    \bibitem{gamma} Minka, Thomas P. (2002). "Estimating a Gamma distribution"
+
+    \url{https://tminka.github.io/papers/minka-gamma.pdf}
+\end{thebibliography}
 \end{document}
