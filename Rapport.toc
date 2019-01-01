@@ -1,3 +1,0 @@
-\babel@toc {french}{}
-\contentsline {section}{\numberline {1}Maintenance basant sur l'\IeC {\^a}ge}{1}
-\contentsline {subsection}{\numberline {1.1}Rappel}{1}
