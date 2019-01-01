@@ -1,8 +1,14 @@
-library(stats4)
-f_melExp = function(p, lambda, mu, x) {
-    p * lambda * exp(-lambda * x) + (1 - p) * mu * exp(-mu * x)
+# Fitting mixture of exp and exp
+theta_melExpExp = list(
+    p = 0.5,
+    lambda = 1 / mean(data),
+    mu = 2 / mean(data)
+)
+# PDF
+f_melExpExp = function(x, theta = theta_melExpExp) {
+    theta$p * dexp(x, rate = theta$lambda) + (1 - theta$p) * dexp(x, rate = theta$mu)
 }
-nle_melExp = function(
+nle_melExpExp = function(
     p,
     lambda,
     mu
@@ -12,17 +18,18 @@ nle_melExp = function(
         " lambda=", lambda,
         " mu=", mu,
         "\n")
-    - sum(log(f_melExp(p, lambda, mu, data)))
-}
-# fitting
-fit_melExp = mle(
-    nle_melExp,
-    start = list(
-       p = 0.5,
-       lambda = 1,
-       mu = 2
+    theta = list(
+        p = p,
+        lambda = lambda,
+        mu = mu
     )
-    ,
+    - sum(log(f_melExpExp(data, theta)))
+}
+# Fitting distribution
+library(stats4)
+fit_melExpExp = mle(
+    nle_melExpExp,
+    start = theta_melExpExp,
     method = "L-BFGS-B",
     lower = c(
         0,
@@ -44,27 +51,26 @@ fit_melExp = mle(
        )
     )
 )
-summary(fit_melExp)
-lambda = fit_melExp@fullcoef["lambda"]
-mu = fit_melExp@fullcoef["mu"]
-p = fit_melExp@fullcoef["p"]
-h_melExp = hist(
+summary(fit_melExpExp)
+theta_melExpExp$lambda = fit_melExpExp@coef["lambda"]
+theta_melExpExp$mu = fit_melExpExp@coef["mu"]
+theta_melExpExp$p = fit_melExpExp@coef["p"]
+h_melExpExp = hist(
     data,
     breaks = 40,
     probability = TRUE,
     main = "Fitting mixture of Exp"
 )
 curve(
-    f_melExp(p, lambda, mu, x),
+    f_melExpExp(x, theta_melExpExp),
     add = TRUE,
     col = "violet",
-    from = min(h_melExp$mids),
-    to = max(h_melExp$mids)
+    from = min(h_melExpExp$mids),
+    to = max(h_melExpExp$mids)
 )
-F_melExp = function(x) {
-    p * (1 - exp(-lambda * x)) + (1 - p) * (1 - exp(-mu * x))
+# CDF
+F_melExpExp = function(x, theta = theta_melExpExp) {
+    theta$p * pexp(x, rate = theta$lambda) + (1 - theta$p) * pexp(x, rate = theta$mu)
 }
-n_breaks = length(h_melExp$breaks)
-distance_melExp = sum(
-    abs((F_melExp(h_melExp$breaks[2:n_breaks]) - F_melExp(h_melExp$breaks[1:n_breaks - 1])) - h_melExp$density)
-)
+# Kolmogorov-Smirnov test
+kstest = ks.test(data, F_melExpExp)

@@ -1,21 +1,33 @@
-## Does not work
 # Fitting mixture of Exp and Gamma
+s = log(mean(data[data >= 2.5])) - mean(log(data[data >= 2.5]))
 theta_melExpGamma = list(
-    p = 0.5,
-    lambda = 1 / sum(data),
-    alpha = 5,
-    beta = 1
+    p1 = 0.5,
+    p2 = 0.5,
+    lambda = 1 / sum(data[data <= 2.5]),
+    alpha = (3 - s + sqrt((s - 3)^2 + 24 * s)) / (12 * s),
+    beta = mean(data[data >= 2.5]) / theta_melExpGamma$alpha
 )
 # PDF
 f_melExpGamma = function(x, theta = theta_melExpGamma) {
-    theta$p * dexp(data, rate = theta$p) + (1 - theta$p) * dgamma(data, shape = theta$alpha, rate = theta$beta)
+    theta$p1 * dexp(data, rate = theta$p) + theta$p2 * dgamma(data, shape = theta$alpha, rate = theta$beta)
 }
 # CDF
 F_melExpGamma = function(x, theta = theta_melExpGamma) {
-    theta$p * pexp(data, rate = theta$p) + (1 - theta$p) * pgamma(data, shape = theta$alpha, rate = theta$beta)
+    theta$p1 * pexp(data, rate = theta$p) + theta$p2 * pgamma(data, shape = theta$alpha, rate = theta$beta)
 }
 
 # Fitting distribution
+
+epsilon = list(
+    alpha = 1e-4,
+    theta = 1e-4
+)
+zeta = matrix(
+    0,
+    nrow = 2,
+    ncol = N
+)
+
 library(stats4)
 nle_melExpGamma = function(
     p,
@@ -43,24 +55,24 @@ fit_melExpGamma = mle(
     method = "L-BFGS-B",
     lower = c(
         0,
-        1e-4,
-        4.5,
-        1e-4
+        1e-6,
+        1e-6,
+        1e-6
     ),
     upper = c(
         1,
         Inf,
-        5.5,
+        Inf,
         Inf
     ),
     control = list(
         trace = 6,
-        maxit = 1000,
+        maxit = 10000,
         ndeps = c(
-            1e-5,
-            1e-5,
-            1e-5,
-            1e-5
+            1e-7,
+            1e-7,
+            1e-7,
+            1e-7
         )
     )
 )
@@ -82,5 +94,3 @@ curve(
     from = min(h_melExpGamma$mids),
     to = max(h_melExpGamma$mids)
 )
-n_breaks = length(h_melExpGamma$breaks)
-distance_melExpGamma = density_distance(F_melExpGamma, h_melExpGamma)
