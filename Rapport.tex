@@ -125,15 +125,29 @@ Pour $\beta$ :
     \Leftrightarrow \beta & = \alpha \frac{{\sum\limits_{i = 1}^N {{\zeta _{2i}}} }}{{\sum\limits_{i = 1}^N {{\zeta _{2i}}{x_i}} }}
 \end{align}
 
-Pour $\alpha$, le calcul devient tellement difficile que la démonstration ici ne sera pas suffisante. Nous n'écrivons que le formule itératif de Newton-Rashphon \cite{gamma} :
+Pour $\alpha$ : 
+\begin{align*}
+    \frac{\partial }{{\partial \alpha }}\ln \Lambda  & = \sum\limits_{i = 1}^N {\frac{{{p_2}{e^{ - \beta {x_i}}}}}{{{p_1}{f_1}\left( x \right) + {p_2}{f_2}\left( x \right)}}\left( {\frac{{\beta \left( {\ln \beta  + \ln {x_i}} \right){{\left( {\beta {x_i}} \right)}^{\alpha  - 1}}}}{{\Gamma \left( \alpha  \right)}} - {\beta ^\alpha }{x^{\alpha  - 1}}\frac{{\Psi \left( \alpha  \right)}}{{\Gamma \left( \alpha  \right)}}} \right)} \\
+    & = \sum\limits_{i = 1}^N {\frac{{{p_2}{f_2}\left( {{x_i}} \right)}}{{{p_1}{f_1}\left( x \right) + {p_2}{f_2}\left( x \right)}}\left( {\ln \beta  + \ln {x_i} - \Psi \left( \alpha  \right)} \right)} \\
+    & = \left( {\sum\limits_{i = 1}^N {{\zeta _{2i}}} } \right)\ln \beta  + \sum\limits_{i = 1}^N {{\zeta _{2i}}\ln {x_i}}  - \Psi \left( \alpha  \right)\left( {\sum\limits_{i = 1}^N {{\zeta _{2i}}} } \right) = 0 \\
+    \Leftrightarrow 0 & = \ln \alpha  + \ln \frac{{\sum\limits_{i = 1}^N {{\zeta _{2i}}} }}{{\sum\limits_{i = 1}^N {{\zeta _{2i}}{x_i}} }} + \frac{{\sum\limits_{i = 1}^N {{\zeta _{2i}}\ln {x_i}} }}{{\sum\limits_{i = 1}^N {{\zeta _{2i}}} }} - \Psi \left( \alpha  \right) \\
+    \Leftrightarrow 0 & = \ln \alpha  - \Psi \left( \alpha  \right) - c
+\end{align*}
+
+Où $c = \ln \left( {\frac{{\sum\limits_{i = 1}^N {{\zeta _{2i}}{x_i}} }}{{\sum\limits_{i = 1}^N {{\zeta _{2i}}} }}} \right) - \frac{{\sum\limits_{i = 1}^N {{\zeta _{2i}}\ln \left( {{x_i}} \right)} }}{{\sum\limits_{i = 1}^N {{\zeta _{2i}}} }}$; $\Psi$ est la fonction digamma.
+
+Selon la méthode de Newton-Rashphon, nous pouvons résoudre $\alpha$ numériquement avec ce formul itératif :
+\[{\alpha _{r + 1}} = {\alpha _r} - \frac{{\ln {\alpha _r} + \Psi \left( {{\alpha _r}} \right) - c}}{{\frac{1}{{{\alpha _r}}} - \Psi '\left( {{\alpha _r}} \right)}}\]
+
+\cite{gamma} propose un autre formule convergeant plus vite :
 \begin{equation}
     \label{alpha}
     \frac{1}{{{\alpha _{r + 1}}}} = \frac{1}{{{\alpha _r}}} + \frac{{\ln \left( {{\alpha _r}} \right) - \Psi \left( {{\alpha _r}} \right) - c}}{{a_r^2\left( {\frac{1}{{{\alpha _r}}} - \Psi '\left( {{\alpha _r}} \right)} \right)}}
 \end{equation}
 
-Où $c = \ln \left( {\frac{{\sum\limits_{i = 1}^N {{\zeta _{2i}}{x_i}} }}{{\sum\limits_{i = 1}^N {{\zeta _{2i}}} }}} \right) - \frac{{\sum\limits_{i = 1}^N {{\zeta _{2i}}\ln \left( {{x_i}} \right)} }}{{\sum\limits_{i = 1}^N {{\zeta _{2i}}} }}$; $\Psi$ et $\Psi'$ sont les fonctions digamma et trigamma dans l'ordre. L'itération part avec ${\alpha _0} = \frac{{0.5}}{c}$.
+Avec $\Psi'$ la fonction trigamma. L'itération part avec ${\alpha _0} = \frac{{0.5}}{c}$.
 
-Et puis, pour $p_k$:
+Au final, pour $p_k$:
 \begin{equation}
     \label{p}
     {p_k} = \frac{{\sum\limits_{i = 1}^N {{\zeta _{ki}}} }}{N}\forall k = \overline {1,2}
@@ -145,10 +159,10 @@ Etant donné \eqref{lambda}, \eqref{beta}, \eqref{alpha} et \eqref{p}, nous déf
     \item \textbf{Etape E :} Evaluer $(\zeta_{ki})$ sachant $\theta_{vieux}$.
     \item \textbf{Etape M :} Calculer $\theta_{nouveau}$ à l'aide des équations \eqref{lambda}, \eqref{beta}, \eqref{alpha} et \eqref{p}. \\
     \emph{Note :} Pour $\alpha$, l'itération se termine quand $\left| {{\alpha _{r + 1}} - {\alpha _r}} \right| < {\varepsilon_\alpha }$ où $\varepsilon_\alpha$ est un réel positif fixé à l'initialisation.
-    \item \textbf{Evaluation :} Si $\left| {{\theta _{nouveau}} - {\theta_{vieux}}} \right| < {\varepsilon _\theta }$ ($\varepsilon_\theta$ est un réel positif fixé à l'initialisation), l'algorithme s'arrête et $\theta = \theta_{vieux}$. \\ Sinon, reviens à l'étape E avec $\theta_{vieux} \leftarrow \theta_{nouveau}$.
+    \item \textbf{Evaluation :} Si $\left\| {{\theta _{c + 1}} - {\theta _c}} \right\| < {\varepsilon _\theta }$ ($\varepsilon_\theta$ est un réel positif fixé à l'initialisation), l'algorithme s'arrête et $\theta = \theta_{vieux}$. \\ Sinon, reviens à l'étape E avec $\theta_{vieux} \leftarrow \theta_{nouveau}$.
 \end{enumerate}
 
-Basé sur le résultat obtenu, nous traçons la fonction de densité $f_\theta$ trouvé (figure \ref{mixage}) et réalisons un test de Kolmogorov-Smirnov. $p-value=0,9663111$ signifie $96,63\%$ de nous tromper si nous rejetons ce modèle. Nous acceptons donc le modèle trouvé. Le code est trouvable à l'annexe \ref{annexe:em_exp_gamma}.
+Basé sur le résultat obtenu, nous traçons la fonction de densité $f_\theta$ trouvé (figure \ref{mixage}) et réalisons un test de Kolmogorov-Smirnov qui donne $p-value=0,9663111$ signifiant $96,63\%$ de nous tromper si nous rejetons ce modèle. Nous l'acceptons alors, quoiqu'il ne génère pas 2 sommets comme la remarque initiale. Le code est trouvable à l'annexe \ref{annexe:em_exp_gamma}.
 
 \begin{figure}[!hbt]
     \centering
