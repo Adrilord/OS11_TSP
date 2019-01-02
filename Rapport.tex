@@ -95,9 +95,11 @@ Nous allons utiliser l'algorithme EM, la méthode la plus efficace pour estimer 
 
 Soit ${\bf{X}} = \left( {{x_1},...,{x_N}} \right)$ le vecteur des données existants.
 
-Soit la matrice de probabilité d'appartenance $(\zeta_{ki})$. $\zeta_{ki}$ vaut la probabilité que $x_i$ suive la loi $f_k$.
-
-\[{\zeta _{ki}} = \frac{{{p_k}{f_k}\left( {{x_i}} \right)}}{{{p_1}{f_1}\left( {{x_i}} \right) + {p_2}{f_2}\left( {{x_i}} \right)}}\forall k = \overline {1,2} \forall i = \overline {1,N} \]
+Soit la matrice de probabilité d'appartenance $(\zeta_{ki})$ : $\zeta_{ki}$ vaut la probabilité que $x_i$ suive la loi $f_k$.
+\begin{equation}
+    \label{zeta}
+    {\zeta _{ki}} = \frac{{{p_k}{f_k}\left( {{x_i}} \right)}}{{{p_1}{f_1}\left( {{x_i}} \right) + {p_2}{f_2}\left( {{x_i}} \right)}}\forall k = \overline {1,2} \forall i = \overline {1,N}
+\end{equation}
 
 La fonction de vraisemblance : 
 \begin{equation}
@@ -153,10 +155,10 @@ Au final, pour $p_k$:
     {p_k} = \frac{{\sum\limits_{i = 1}^N {{\zeta _{ki}}} }}{N}\forall k = \overline {1,2}
 \end{equation}
 
-Etant donné \eqref{lambda}, \eqref{beta}, \eqref{alpha} et \eqref{p}, nous définissons l'algorithme EM :
+Etant donné \eqref{zeta}, \eqref{lambda}, \eqref{beta}, \eqref{alpha} et \eqref{p}, nous définissons l'algorithme EM :
 \begin{enumerate}
     \item \textbf{Initialisation :} Choisir un $\theta_{vieux}$.
-    \item \textbf{Etape E :} Evaluer $(\zeta_{ki})$ sachant $\theta_{vieux}$.
+    \item \textbf{Etape E :} Evaluer $(\zeta_{ki})$ sachant $\theta_{vieux}$ en utilisant \eqref{zeta}.
     \item \textbf{Etape M :} Calculer $\theta_{nouveau}$ à l'aide des équations \eqref{lambda}, \eqref{beta}, \eqref{alpha} et \eqref{p}. \\
     \emph{Note :} Pour $\alpha$, l'itération se termine quand $\left| {{\alpha _{r + 1}} - {\alpha _r}} \right| < {\varepsilon_\alpha }$ où $\varepsilon_\alpha$ est un réel positif fixé à l'initialisation.
     \item \textbf{Evaluation :} Si $\left\| {{\theta _{c + 1}} - {\theta _c}} \right\| < {\varepsilon _\theta }$ ($\varepsilon_\theta$ est un réel positif fixé à l'initialisation), l'algorithme s'arrête et $\theta = \theta_{vieux}$. \\ Sinon, reviens à l'étape E avec $\theta_{vieux} \leftarrow \theta_{nouveau}$.
@@ -170,6 +172,9 @@ Basé sur le résultat obtenu, nous traçons la fonction de densité $f_\theta$ 
     \caption{Mixage de la loi Exponentielle et Gamma}
     \label{mixage}
 \end{figure}
+
+\subsection{La politique de maintenance basée sur l'âge}
+
 
 \section{Annexe}
 \subsection{L'importation de données de pannes}
