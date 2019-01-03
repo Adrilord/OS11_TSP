@@ -164,7 +164,10 @@ Etant donné \eqref{zeta}, \eqref{lambda}, \eqref{beta}, \eqref{alpha} et \eqref
     \item \textbf{Evaluation :} Si $\left\| {{\theta _{c + 1}} - {\theta _c}} \right\| < {\varepsilon _\theta }$ ($\varepsilon_\theta$ est un réel positif fixé à l'initialisation), l'algorithme s'arrête et $\theta = \theta_{vieux}$. \\ Sinon, reviens à l'étape E avec $\theta_{vieux} \leftarrow \theta_{nouveau}$.
 \end{enumerate}
 
-Basé sur le résultat obtenu, nous traçons la fonction de densité $f_\theta$ trouvé (figure \ref{mixage}) et réalisons un test de Kolmogorov-Smirnov qui donne $p-value=0,9663111$ signifiant $96,63\%$ de nous tromper si nous rejetons ce modèle. Nous l'acceptons alors, quoiqu'il ne génère pas 2 sommets comme la remarque initiale. Le code est trouvable à l'annexe \ref{annexe:em_exp_gamma}.
+Le résultat obtenu :
+\[\left( {{p_1},{p_2},\lambda ,\alpha ,\beta } \right) = \left( {0.2194518;0.7805482;1.56738;1.665659;0.2332427} \right)\]
+
+D'où nous traçons la fonction de densité $f_\theta$ trouvé (figure \ref{mixage}) et réalisons un test de Kolmogorov-Smirnov qui donne $p-value=0,9663111$ signifiant $96,63\%$ de nous tromper si nous rejetons ce modèle. Nous l'acceptons alors, quoiqu'il ne génère pas 2 sommets comme la remarque initiale. Le code est trouvable à l'annexe \ref{annexe:em_exp_gamma}.
 
 \begin{figure}[!hbt]
     \centering
