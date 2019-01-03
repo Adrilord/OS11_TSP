@@ -62,11 +62,11 @@ Considérons un système non maintenu. En l'observant, nous obtenons un liste de
 
 Le but est de minimiser le coût moyen cumulé.
 \begin{equation}
-    \label{coutmoy}
+    \label{coutmoyduree}
     \mathbb{E}(C) = \frac{\mathbb{E}(C(S))}{\mathbb{E}(S)}
 \end{equation}
 
-Où $S$ est la variable aléatoire représentant la date de remplacement et $C(S)$ est le coût de maintenance cumulé à l'instant $S$ (sachant que $C(S)$ est $c_c$ si une maintenance corrective et $c_p$ si préventive).
+Où $S$ est la variable aléatoire représentant la date de remplacement et $C(S)$ est le coût de maintenance cumulé à l'instant $S$ (sachant que $C(S)$ est $c_c (=1200)$ si une maintenance corrective et $c_p(=800)$ si préventive).
 \subsection{Modéliser la durée de vie du système}
 L'importation de données (l'annexe \ref{annexe:import_pannes}) nous montre que les dates de pannes sont de l'ordre grandement variée ($300$ à $27000$) (l'annexe \ref{annexe:premier_histo}). Exponentiel des valeurs extrèmes résulteront $Inf$, ce qui est indésirable. Alors nous devons forcément les réduire en les divisant par un scalaire \texttt{scale}, prenons par example $1000$.  (Figure \ref{histo1})
 \begin{figure}[!htb]
@@ -93,7 +93,7 @@ Où $f_1, f_2$ désignent réspectivement $exp(\lambda)$ et $\Gamma(\alpha, \bet
 
 Nous allons utiliser l'algorithme EM, la méthode la plus efficace pour estimer le MLE de mixage fini.
 
-Soit ${\bf{X}} = \left( {{x_1},...,{x_N}} \right)$ le vecteur des données existants.
+Soit $X$ la variable aléatoire de durée de vie du système. Soient $\left( {{x_1},...,{x_N}} \right)$ les observations.
 
 Soit la matrice de probabilité d'appartenance $(\zeta_{ki})$ : $\zeta_{ki}$ vaut la probabilité que $x_i$ suive la loi $f_k$.
 \begin{equation}
@@ -141,7 +141,7 @@ Où $c = \ln \left( {\frac{{\sum\limits_{i = 1}^N {{\zeta _{2i}}{x_i}} }}{{\sum\
 Selon la méthode de Newton-Rashphon, nous pouvons résoudre $\alpha$ numériquement avec ce formul itératif :
 \[{\alpha _{r + 1}} = {\alpha _r} - \frac{{\ln {\alpha _r} + \Psi \left( {{\alpha _r}} \right) - c}}{{\frac{1}{{{\alpha _r}}} - \Psi '\left( {{\alpha _r}} \right)}}\]
 
-\cite{gamma} propose un autre formule convergeant plus vite :
+\cite{bib:gamma} propose un autre formule convergeant plus vite :
 \begin{equation}
     \label{alpha}
     \frac{1}{{{\alpha _{r + 1}}}} = \frac{1}{{{\alpha _r}}} + \frac{{\ln \left( {{\alpha _r}} \right) - \Psi \left( {{\alpha _r}} \right) - c}}{{a_r^2\left( {\frac{1}{{{\alpha _r}}} - \Psi '\left( {{\alpha _r}} \right)} \right)}}
@@ -175,6 +175,39 @@ Basé sur le résultat obtenu, nous traçons la fonction de densité $f_\theta$ 
 
 \subsection{La politique de maintenance basée sur l'âge}
 
+Avec la fonction $f_\theta$ trouvée, nous construirerons la politique optimale.
+
+Nous avons par définition : $S = \min \left( {X,{t_0}} \right)$.
+
+Autrement dit, $S = X{\mathbb{I}_{\left\{ {X < {t_0}} \right\}}} + {t_0}{\mathbb{I}_{\left\{ {X \geqslant {t_0}} \right\}}}$.
+
+Traduit au coût : $C\left( S \right) = {C_c}{\mathbb{I}_{\left\{ {X < {t_0}} \right\}}} + {C_p}{\mathbb{I}_{\left\{ {X \geqslant {t_0}} \right\}}}$, avec $C_c, C_p$ les coûts de maintenances correctives et préventives réspectivement.
+
+Le coût moyen :
+\begin{align}
+    \label{coutmoy}
+    \mathbb{E}\left( {C\left( S \right)} \right) & = {c_c}\mathbb{E}\left( {{\mathbb{I}_{\left\{ {X < {t_0}} \right\}}}} \right) + {c_p}\mathbb{E}\left( {{\mathbb{I}_{\left\{ {X \geqslant {t_0}} \right\}}}} \right) \nonumber \\
+    & = {c_c}P\left( {X < {t_0}} \right) + {c_p}P\left( {X \geqslant {t_0}} \right) \nonumber \\
+    & = {c_c}{F_\theta }\left( {{t_0}} \right) + {c_p}\left( {1 - {F_\theta }\left( {{t_0}} \right)} \right) \nonumber \\
+    & = \left( {{c_c} - {c_p}} \right){F_\theta }\left( {{t_0}} \right) + {c_p}
+\end{align}
+
+La durée moyenne :
+\begin{align}
+    \label{dureemoy}
+    \mathbb{E}\left( S \right) & = \mathbb{E}\left( {X{\mathbb{I}_{\left\{ {X < {t_0}} \right\}}}} \right) + {t_0}\mathbb{E}\left( {{\mathbb{I}_{\left\{ {X \geqslant {t_0}} \right\}}}} \right)\nonumber\\
+    & = \int_0^{{t_0}} {x{f_\theta }\left( x \right)dx}  + {t_0}P\left( {X \geqslant {t_0}} \right) \nonumber \\
+    & = x{F_\theta }\left( x \right)|_0^{{t_0}} - \int_0^{{t_0}} {{F_\theta }\left( x \right)dx}  + {t_0}\left( {1 - {F_\theta }\left( {{t_0}} \right)} \right) \nonumber \\
+    & = {t_0} - \int_0^{{t_0}} {{F_\theta }\left( x \right)dx}
+\end{align}
+
+De \eqref{coutmoy} et \eqref{dureemoy}, nous détaillons le coût moyen sur une durée de temps \eqref{coutmoyduree} :
+\begin{equation}
+    \label{coutmoydureedet}
+    \mathbb{E}\left( C \right) = \frac{{\mathbb{E}\left( {C\left( S \right)} \right)}}{{\mathbb{E}\left( S \right)}} = \frac{{\left( {{c_c} - {c_p}} \right){F_\theta }\left( {{t_0}} \right) + {c_p}}}{{{t_0} - \int_0^{{t_0}} {{F_\theta }\left( x \right)dx} }}
+\end{equation}
+
+L'annexe \eqref{annexe:optim_e_c} montrer comment chercher l'optimum numériquement. La valeur minimum est $t_0 = 27,29639$ (mille heures), correspondant à un coût moyen de $210,6402$.
 
 \section{Annexe}
 \subsection{L'importation de données de pannes}
@@ -186,9 +219,12 @@ Basé sur le résultat obtenu, nous traçons la fonction de densité $f_\theta$ 
 \subsection{Estimer le mixage de la loi Exponentielle et Gamma}
 \label{annexe:em_exp_gamma}
 \lstinputlisting[language=R]{EM_Exp_Gamma.R}
+\subsection{Optimiser le coût moyenne sur une durée de temps}
+\label{annexe:optim_e_c}
+\lstinputlisting[language=R]{optimize_t0_failures.R}
 
 \begin{thebibliography}{9}
-    \bibitem{gamma} Minka, Thomas P. (2002). "Estimating a Gamma distribution"
+    \bibitem{bib:gamma} Minka, Thomas P. (2002). "Estimating a Gamma distribution"
 
     \url{https://tminka.github.io/papers/minka-gamma.pdf}
 \end{thebibliography}

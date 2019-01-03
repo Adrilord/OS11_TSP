@@ -84,7 +84,7 @@ h_theta = hist(
     data,
     breaks = 40,
     probability = TRUE,
-    main = "Mixage de la loi Exponentielle and Gamma",
+    main = "Mixage de la loi Exponentielle et Gamma",
     xlab = "Dates de panne (mille d'heures)",
     ylab = "Densité"
 )
