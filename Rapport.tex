@@ -68,7 +68,9 @@ Le but est de minimiser le coût moyen cumulé.
 
 Où $S$ est la variable aléatoire représentant la date de remplacement et $C(S)$ est le coût de maintenance cumulé à l'instant $S$ (sachant que $C(S)$ est $c_c (=1200)$ si une maintenance corrective et $c_p(=800)$ si préventive).
 \subsection{Modéliser la durée de vie du système}
-L'importation de données (l'annexe \ref{annexe:import_pannes}) nous montre que les dates de pannes sont de l'ordre grandement variée ($300$ à $27000$) (l'annexe \ref{annexe:premier_histo}). Exponentiel des valeurs extrèmes résulteront $Inf$, ce qui est indésirable. Alors nous devons forcément les réduire en les divisant par un scalaire \texttt{scale}, prenons par example $1000$.  (Figure \ref{histo1})
+L'importation de données de \texttt{FailureTimes\_5.csv} (l'annexe \ref{annexe:import_pannes}) expose les dates de pannes de l'ordre grandement variée ($300$ à $27000$) (l'annexe \ref{annexe:premier_histo}). 
+
+Exponentiel des valeurs extrèmes résulteront $Inf$, ce qui est indésirable. Alors nous devons forcément les réduire en les divisant par un scalaire \texttt{scale}, prenons par example $1000$.  (Figure \ref{histo1})
 \begin{figure}[!htb]
     \centering
     \includegraphics[width=\textwidth]{premier_histo.png}
@@ -228,6 +230,7 @@ On souhaite de mettre en place une politique de maintenance conditionnelle, bas�
 Le but est minimiser le coût moyen sur une durée de temps \eqref{coutmoyduree} en bien choissisant le seuil $M$ et l'intervalle d'inspection $\Delta T$.
 \subsection{Modéliser la dégradation du système}
 
+Soient les données de \texttt{DegradLevel\_2.csv}, nous traçons leurs processus de dégrader. (Les annexes \eqref{annexe:import_degrad} et \eqref{annexe:premier_plot_degrad})
 
 \section{Annexe}
 \subsection{L'importation de données de pannes}
@@ -242,6 +245,12 @@ Le but est minimiser le coût moyen sur une durée de temps \eqref{coutmoyduree}
 \subsection{Optimiser le coût moyenne sur une durée de temps}
 \label{annexe:optim_e_c}
 \lstinputlisting[language=R]{optimize_t0_failures.R}
+\subsection{Importer les valeurs de dégradation}
+\label{annexe:import_degrad}
+\lstinputlisting[language=R]{import_degrad.R}
+\subsection{Premiers traçes de dégradation}
+\label{annexe:premier_plot_degrad}
+\lstinputlisting[language=R]{plot_degrad.R}
 
 \begin{thebibliography}{9}
     \bibitem{bib:gamma} Minka, Thomas P. (2002). "Estimating a Gamma distribution"
