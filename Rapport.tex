@@ -56,7 +56,7 @@ literate=
 \begin{abstract}
 Soient des données liées à la fonctionnement de système, nous déterminons un modèle approprié et puis choisir une politique de maintenance optimal.
 \end{abstract}
-\section{Maintenance basant sur l'âge}
+\section{Maintenance basée sur l'âge}
 \subsection{Rappel}
 Considérons un système non maintenu. En l'observant, nous obtenons un liste des dates de panne, grâce auquel nous construirerons une politique de remplacement systématique basée sur l'âge : \emph{Nous remplaçons lorsque le système tombe en panne ou qu'il survit une durée $t_0$}.
 
@@ -211,6 +211,23 @@ De \eqref{coutmoy} et \eqref{dureemoy}, nous détaillons le coût moyen sur une 
 \end{equation}
 
 L'annexe \eqref{annexe:optim_e_c} montrer comment chercher l'optimum numériquement. La valeur minimum est $t_0 = 27,29639$ (mille heures), correspondant à un coût moyen de $210,6402$. Nous constatons que $t_0^{min}$ est très proche du maximum de durée de vie, indiquant que l'optimisation de $t_0$ est inutile car le système ne viellit pas.
+
+\section{Maintenance basée sur dégradation}
+\subsection{Rappel}
+En observant multiples systèmes identiques, nous effectuons des mesures de dégradation sur des intervalles de temps réguliers tout au long de leurs durée de vie.
+
+La valeur limite de dégradation est $L=20$. C'est-à-dire lorsque le niveau de dégradation dépasse $L$, le système tombe en panne et nous ne pourrons plus le mesurer.
+
+On souhaite de mettre en place une politique de maintenance conditionnelle, basée sur un seuil $M$ inférieur à $L$ et l'intervalle de temps $\Delta T$ entre les inspections. Appellons $X_t$ le niveau de dégradation à l'instant $t$ (instant d'une inspection).
+\begin{itemize}
+    \item Si $X_t < M$, nous laissons le système tel quel.
+    \item Si $M \leq X_t < L$, un remplacement préventif est réalisé au coût $c_p$. Et puis $X_t$ est remis à $0$.
+    \item Si $X_t \geq L$, un remplacement correctif est fait au coût $c_c$. Et puis $X_t$ est remis à $0$.
+\end{itemize}
+
+Le but est minimiser le coût moyen sur une durée de temps \eqref{coutmoyduree} en bien choissisant le seuil $M$ et l'intervalle d'inspection $\Delta T$.
+\subsection{Modéliser la dégradation du système}
+
 
 \section{Annexe}
 \subsection{L'importation de données de pannes}
