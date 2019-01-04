@@ -230,7 +230,15 @@ On souhaite de mettre en place une politique de maintenance conditionnelle, bas�
 Le but est minimiser le coût moyen sur une durée de temps \eqref{coutmoyduree} en bien choissisant le seuil $M$ et l'intervalle d'inspection $\Delta T$.
 \subsection{Modéliser la dégradation du système}
 
-Soient les données de \texttt{DegradLevel\_2.csv}, nous traçons leurs processus de dégrader. (Les annexes \eqref{annexe:import_degrad} et \eqref{annexe:premier_plot_degrad})
+Soient les données de \texttt{DegradLevel\_2.csv}, nous traçons leurs processus de dégrader (figure \eqref{fig:trace_degrad}). (Les annexes \eqref{annexe:import_degrad} et \eqref{annexe:premier_plot_degrad})
+
+Comme les temps d'inspection sont de l'ordre millier, il vaudrait de les diviser par un scalaire (par example, $scale = 1000$) afin d'assurer la précision de calcul numérique.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{trace_degrad.png}
+    \label{fig:trace_degrad}
+\end{figure}
 
 \section{Annexe}
 \subsection{L'importation de données de pannes}
