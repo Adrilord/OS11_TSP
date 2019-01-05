@@ -17,8 +17,8 @@ o = optimize(
     tol = 1e-5
 )
 d = seq(
-        5,
-        10,
+        min(data),
+        max(data),
         0.01
     )
 plot(
