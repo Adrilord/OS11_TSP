@@ -240,6 +240,68 @@ Comme les temps d'inspection sont de l'ordre millier, il vaudrait de les diviser
     \label{fig:trace_degrad}
 \end{figure}
 
+Nous voyons les accroissements positifs, suggérant un modèle de processus Gamma.
+
+Soit $X(t)$ la variable aléatoire de dégradation du système. Supposons que $X(t) - X(s) \sim \Gamma(a(t-s),b)\,\forall t > s > 0$. Nous allons estimer les paramètres $a,b$ en modélisant la distribution des incréments entre deux moments successifs.
+
+Fixons $t-s = \delta = 0.8$, car les mesures donnés sont effectués au bout de chaque intervalle de $0.8$.
+
+L'histogramme des incréments :
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=\textwidth]{histo_degrad.png}
+    \caption{Histogramme des incréments de l'intervalle $\delta = 0.8$}
+    \label{fig:histo_degrad}
+\end{figure}
+
+A l'aide du librairie MASS : $\left( {a;b} \right) = \left( {\frac{\alpha }{\delta };\beta } \right) = \left( {2.843101;1.140354} \right)$ où $(\alpha, \beta)$ sont les paramètres estimés par MASS. Le code est mis à l'annexe \eqref{annexe:estim_degrad}.
+
+Un test rapide de Kolmogorov-Smirnov nous donne $p-value = 0.8651934$, indiquant le modèle est acceptable.
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=\textwidth]{histo_dens_degrad.png}
+    \caption{Histogramme et la courbe de densité estimé des incréments de l'intervalle $\delta = 0.8$}
+    \label{fig:histo_dens_degrad}
+\end{figure}
+
+D'autant plus, si nous refaisons les calculs ci-dessus avec $\delta = 1.6, 2.4, 3.2, etc.$, nous voyons les valeurs de $a$ et $b$ ne varient pas trop. Alors, nous choisissons le couple $(a,b)$ avec $p$ le plus grand. ($\delta$ trop grand réduira nombreux de données, résultant moins précision)
+
+\begin{table}[!h]
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        $\delta$ & $a$ & $b$ & $p$ \\
+        \hline
+        0.8 & 2.8431009 & 1.1403540 & 0.8651934\\
+        1.6 & 3.0207719 & 1.2091646 & 0.9919939\\
+        2.4 & 3.0187497 & 1.1907719 & 0.1279252\\
+        3.2 & 2.997763 & 1.185547 & 0.300610\\
+        4.0 & 3.5036580 & 1.4061063 & 0.6307951\\
+        \hline
+    \end{tabular}
+    \caption{Calcul $(a,b)$ avec différents $\delta$}
+\end{table}
+
+Au final, $X(t) - X(s) \sim \Gamma(a(t-s),b) \forall t > s > 0$ avec $$(a,b) = (3.0207719;1.2091646)$$
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=\textwidth]{histo_dens_degrad_1_6.png}
+    \caption{Histogramme et la courbe de densité estimé des incréments de l'intervalle $\delta = 1.6$}
+    \label{fig:histo_dens_degrad_1_6}
+\end{figure}
+
+\subsection{La politique de maintenance basée sur dégradation}
+
+Cette politique, outre que $c_c=1200$ et $c_p=800$, introduit ainsi le coût d'inspection $c_i = 10$.
+
+Soit $S$ la variable aléatoire représentant la date de remplacement; $C(S)$ est le coût de maintenance cumulé à l’instant $S$, et $N(S)$ le nombre d'inspections depuis la dernière remplacement jusqu'à $S$.
+
+\begin{equation}
+    \label{c_s_de}
+    C\left( S \right) = {c_i}N\left( S \right) + {c_p}{\mathbb{I}_{\left\{ {L > {X_t} \geqslant M} \right\}}} + {c_c}{\mathbb{I}_{\left\{ {{X_t} \geqslant L} \right\}}}
+\end{equation}
+\clearpage
 \section{Annexe}
 \subsection{L'importation de données de pannes}
 \label{annexe:import_pannes}
@@ -259,6 +321,9 @@ Comme les temps d'inspection sont de l'ordre millier, il vaudrait de les diviser
 \subsection{Premiers traçes de dégradation}
 \label{annexe:premier_plot_degrad}
 \lstinputlisting[language=R]{plot_degrad.R}
+\subsection{Estimation de paramètres de dégradations}
+\label{annexe:estim_degrad}
+\lstinputlisting[language=R]{estime_degrad.R}
 
 \begin{thebibliography}{9}
     \bibitem{bib:gamma} Minka, Thomas P. (2002). "Estimating a Gamma distribution"
