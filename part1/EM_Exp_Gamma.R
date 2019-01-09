@@ -4,8 +4,8 @@
 k = 2 # number of components
 p = c(0.5, 0.5)
 lambda = 1
-alpha = 5
-beta = 1
+alpha = 10
+beta = 2
 f = list(
     '1' = function(x) {
         dexp(x, rate = lambda)
@@ -13,6 +13,25 @@ f = list(
     '2' = function(x) {
         dgamma(x, shape = alpha, rate = beta)
     }
+)
+# Illustration initial
+f_theta = function(x) {
+  p[[1]] * f[[1]](x) + p[[2]] * f[[2]](x)
+}
+h_theta = hist(
+  data,
+  breaks = 40,
+  probability = TRUE,
+  main = "Mixage de la loi Exponentielle et Gamma",
+  xlab = "Dates de panne (mille d'heures)",
+  ylab = "Densité"
+)
+curve(
+  f_theta(x),
+  add = TRUE,
+  col = "violet",
+  from = min(h_theta$mids),
+  to = max(h_theta$mids)
 )
 epsilon = list(
     alpha = 1e-4,
@@ -75,25 +94,24 @@ alpha = alpha_new
 beta = beta_new
 lambda = lambda_new
 p = p_new
-
-# Illustration
+# Illustration final
 f_theta = function(x) {
-    p[[1]] * f[[1]](x) + p[[2]] * f[[2]](x)
+  p[[1]] * f[[1]](x) + p[[2]] * f[[2]](x)
 }
 h_theta = hist(
-    data,
-    breaks = 40,
-    probability = TRUE,
-    main = "Mixage de la loi Exponentielle et Gamma",
-    xlab = "Dates de panne (mille d'heures)",
-    ylab = "Densité"
+  data,
+  breaks = 40,
+  probability = TRUE,
+  main = "Mixage de la loi Exponentielle et Gamma",
+  xlab = "Dates de panne (mille d'heures)",
+  ylab = "Densité"
 )
 curve(
-    f_theta(x),
-    add = TRUE,
-    col = "violet",
-    from = min(h_theta$mids),
-    to = max(h_theta$mids)
+  f_theta(x),
+  add = TRUE,
+  col = "violet",
+  from = min(h_theta$mids),
+  to = max(h_theta$mids)
 )
 # Kolmogorov-Smirnov test
 F_theta = function(x) {
