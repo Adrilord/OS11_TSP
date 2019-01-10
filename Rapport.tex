@@ -74,14 +74,18 @@ L'importation de données de \texttt{FailureTimes\_5.csv} (l'annexe \ref{annexe:
 Exponentiel des valeurs extrèmes résulteront $Inf$, ce qui est indésirable. Alors nous devons forcément les réduire en les divisant par un scalaire \texttt{scale}, prenons par example $1000$.  (Figure \ref{histo1})
 \begin{figure}[!htb]
     \centering
-    \includegraphics[width=\textwidth]{premier_histo.png}
+    \includegraphics[width=\textwidth]{img/premier_histo.png}
     \caption{Le premier histogramme de distribution de pannes}
     \label{histo1}
 \end{figure}
 
 Les pannes se concentrent autour de 2 sommets, l'un à $[0; 0,5]$ et l'autre à $[4,5; 5]$. Ceci nous fait penser naturellement à un mixage de deux lois.
 
-Comme les valeurs sont positives, et que l'un sommet se situe auprès de zéro et l'autre à une valeur non nulle, nous essayons d'estimer un mixage de loi \emph{Exponentielle} et \emph{Gamma}.
+Nous pouvons remarquer que les valeurs sont positives (étant données que ce sont des temps) et que la
+distribution semble posséder deux parties importantes. Une dont le sommet se situe près de zéro et qui est suivi d'une pente forte, et l'autre sommet est à une valeur non nulle (5) que la distribution locale en forme de pic.
+Nous avons donc penser estimer un mixage de loi \emph{Exponentielle} et \emph{Gamma} afin de modéliser
+les données. En effet la première partie correspondrait à une loi exponentielle tandis que la seconde à
+une loi gamma (Et .
 
 La fonction de densité avec le paramètre $\theta  = \left( {p_1, p_2, \lambda ,\alpha ,\beta } \right)$ :
 \begin{align}
@@ -147,7 +151,7 @@ Selon la méthode de Newton-Rashphon, nous pouvons résoudre $\alpha$ numérique
 \cite{bib:gamma} propose un autre formule convergeant plus vite :
 \begin{equation}
     \label{alpha}
-    \frac{1}{{{\alpha _{r + 1}}}} = \frac{1}{{{\alpha _r}}} + \frac{{\ln \left( {{\alpha _r}} \right) - \Psi \left( {{\alpha _r}} \right) - c}}{{a_r^2\left( {\frac{1}{{{\alpha _r}}} - \Psi '\left( {{\alpha _r}} \right)} \right)}}
+    \frac{1}{{{\alpha _{r + 1}}}} = \frac{1}{{{\alpha _r}}} + \frac{{\ln \left( {{\alpha _r}} \right) - \Psi \left( {{\alpha _r}} \right) - c}}{{\alpha_r^2\left( {\frac{1}{{{\alpha _r}}} - \Psi '\left( {{\alpha _r}} \right)} \right)}}
 \end{equation}
 
 Avec $\Psi'$ la fonction trigamma. L'itération part avec ${\alpha _0} = \frac{{0.5}}{c}$.
@@ -160,22 +164,33 @@ Au final, pour $p_k$:
 
 Etant donné \eqref{zeta}, \eqref{lambda}, \eqref{beta}, \eqref{alpha} et \eqref{p}, nous définissons l'algorithme EM :
 \begin{enumerate}
-    \item \textbf{Initialisation :} Choisir un $\theta_{vieux}$.
-    \item \textbf{Etape E :} Evaluer $(\zeta_{ki})$ sachant $\theta_{vieux}$ en utilisant \eqref{zeta}.
-    \item \textbf{Etape M :} Calculer $\theta_{nouveau}$ à l'aide des équations \eqref{lambda}, \eqref{beta}, \eqref{alpha} et \eqref{p}. \\
+    \item \textbf{Initialisation :} Choisir $\theta_{0}$.
+    \item \textbf{Etape E :} Evaluer $(\zeta_{ki})$ sachant $\theta_{c}$ en utilisant \eqref{zeta}.
+    \item \textbf{Etape M :} Calculer $\theta_{c+1}$ à l'aide des équations \eqref{lambda}, \eqref{beta}, \eqref{alpha} et \eqref{p}. \\
     \emph{Note :} Pour $\alpha$, l'itération se termine quand $\left| {{\alpha _{r + 1}} - {\alpha _r}} \right| < {\varepsilon_\alpha }$ où $\varepsilon_\alpha$ est un réel positif fixé à l'initialisation.
-    \item \textbf{Evaluation :} Si $\left\| {{\theta _{c + 1}} - {\theta _c}} \right\| < {\varepsilon _\theta }$ ($\varepsilon_\theta$ est un réel positif fixé à l'initialisation), l'algorithme s'arrête et $\theta = \theta_{vieux}$. \\ Sinon, reviens à l'étape E avec $\theta_{vieux} \leftarrow \theta_{nouveau}$.
+    \item \textbf{Evaluation :} Si $\left\| {{\theta_{c + 1}} - {\theta_c}} \right\| < {\varepsilon _\theta }$ ($\varepsilon_\theta$ est un réel positif fixé à l'initialisation), l'algorithme s'arrête et $\theta = \theta_{vieux}$. \\ Sinon, reviens à l'étape E avec $\theta_{vieux} \leftarrow \theta_{nouveau}$.
 \end{enumerate}
 
-Le résultat obtenu :
+Avant de lancer l'algorithme nous essayons d'obtenir un ensemble de paramètres initiaux $\theta_{0}$
+qui soient cohérent avec la distribution des données. Nous avons choisi 
+\[\left( {{p_{10}},{p_{20}},\lambda_{0} ,\alpha_{0} ,\beta_{0} } \right) = \left( {0.5;0.5;1;10;2} \right)\]
+
+\begin{figure}[!hbt]
+    \centering
+    \includegraphics[width=\textwidth]{img/loi_initiale_Exp_Gamma.png}
+    \caption{Mixage de la loi Exponentielle et Gamma : paramètres initiaux}
+    \label{mixage_init}
+\end{figure}
+
+Après l'utilisation de l'algorithme EM, nous avons obtenu le résultat :
 \[\left( {{p_1},{p_2},\lambda ,\alpha ,\beta } \right) = \left( {0.2194518;0.7805482;1.56738;1.665659;0.2332427} \right)\]
 
 D'où nous traçons la fonction de densité $f_\theta$ trouvé (figure \ref{mixage}) et réalisons un test de Kolmogorov-Smirnov qui donne $p-value=0,9663111$ signifiant $96,63\%$ de nous tromper si nous rejetons ce modèle. Nous l'acceptons alors, quoiqu'il ne génère pas 2 sommets comme la remarque initiale. Le code est trouvable à l'annexe \ref{annexe:em_exp_gamma}.
 
 \begin{figure}[!hbt]
     \centering
-    \includegraphics[width=\textwidth]{EM_Exp_Gamma.png}
-    \caption{Mixage de la loi Exponentielle et Gamma}
+    \includegraphics[width=\textwidth]{img/EM_Exp_Gamma.png}
+    \caption{Mixage de la loi Exponentielle et Gamma : paramètres finaux}
     \label{mixage}
 \end{figure}
 
@@ -237,7 +252,7 @@ Comme les temps d'inspection sont de l'ordre millier, il vaudrait de les diviser
 
 \begin{figure}
     \centering
-    \includegraphics[width=\textwidth]{trace_degrad.png}
+    \includegraphics[width=\textwidth]{img/trace_degrad.png}
     \label{fig:trace_degrad}
 \end{figure}
 
@@ -250,7 +265,7 @@ Fixons $t-s = \delta = 0.8$, car les mesures donnés sont effectués au bout de 
 L'histogramme des incréments :
 \begin{figure}[!h]
     \centering
-    \includegraphics[width=\textwidth]{histo_degrad.png}
+    \includegraphics[width=\textwidth]{img/histo_degrad.png}
     \caption{Histogramme des incréments de l'intervalle $\delta = 0.8$}
     \label{fig:histo_degrad}
 \end{figure}
@@ -260,7 +275,7 @@ A l'aide du librairie MASS : $\left( {a;b} \right) = \left( {\frac{\alpha }{\del
 Un test rapide de Kolmogorov-Smirnov nous donne $p-value = 0.8651934$, indiquant le modèle est acceptable.
 \begin{figure}[!h]
     \centering
-    \includegraphics[width=\textwidth]{histo_dens_degrad.png}
+    \includegraphics[width=\textwidth]{img/histo_dens_degrad.png}
     \caption{Histogramme et la courbe de densité estimé des incréments de l'intervalle $\delta = 0.8$}
     \label{fig:histo_dens_degrad}
 \end{figure}
@@ -269,7 +284,7 @@ D'autant plus, si nous refaisons les calculs ci-dessus avec $\delta = 1.6, 2.4, 
 
 \begin{figure}[!h]
     \centering
-    \includegraphics[width=\textwidth]{histo_dens_degrad_1_6.png}
+    \includegraphics[width=\textwidth]{img/histo_dens_degrad_1_6.png}
     \caption{Histogramme et la courbe de densité estimé des incréments de l'intervalle $\delta = 1.6$}
     \label{fig:histo_dens_degrad_1_6}
 \end{figure}
@@ -400,35 +415,36 @@ Bien que le résultat n'est pas stable, nous pouvons arriver à une valeur appro
     \centering
     \caption{Représentation graphique de $E(C)$}
     \label{fig:e_c}
-    \includegraphics[width=0.8\textwidth]{E_C_degrad.png}
+    \includegraphics[width=0.8\textwidth]{img/E_C_degrad.png}
 \end{figure}
 
 \clearpage
 \section{Annexe}
 \subsection{L'importation de données de pannes}
 \label{annexe:import_pannes}
-\lstinputlisting[language=R]{import_failures.R}
+\lstinputlisting[language=R]{part1/import_failures.R}
 \subsection{Le premier histogramme de distribution de pannes}
 \label{annexe:premier_histo}
-\lstinputlisting[language=R]{premier_histo.R}
+\lstinputlisting[language=R]{part1/premier_histo.R}
 \subsection{Estimer le mixage de la loi Exponentielle et Gamma}
 \label{annexe:em_exp_gamma}
-\lstinputlisting[language=R]{EM_Exp_Gamma.R}
+\lstinputlisting[language=R]{part1/EM_Exp_Gamma.R}
 \subsection{Optimiser le coût moyenne sur une durée de temps}
 \label{annexe:optim_e_c}
-\lstinputlisting[language=R]{optimize_t0_failures.R}
+\lstinputlisting[language=R]{part1/optimize_t0_failures.R}
 \subsection{Importer les valeurs de dégradation}
 \label{annexe:import_degrad}
-\lstinputlisting[language=R]{import_degrad.R}
+\lstinputlisting[language=R]{part2/import_degrad.R}
 \subsection{Premiers traçes de dégradation}
 \label{annexe:premier_plot_degrad}
-\lstinputlisting[language=R]{plot_degrad.R}
+\lstinputlisting[language=R]{part2/plot_degrad.R}
 \subsection{Estimation de paramètres de dégradations}
 \label{annexe:estim_degrad}
-\lstinputlisting[language=R]{estime_degrad.R}
+\lstinputlisting[language=R]{part2/estime_degrad.R}
 \subsection{Optimisation de maintenance basée sur dégradations}
 \label{annexe:optim_degrad}
-\lstinputlisting[language=R]{optimize_degrad_montecarlo.R}
+\lstinputlisting[language=R]{part2/optimize_degrad_montecarlo.R}
+
 \begin{thebibliography}{9}
     \bibitem{bib:gamma} Minka, Thomas P. (2002). "Estimating a Gamma distribution"
 
