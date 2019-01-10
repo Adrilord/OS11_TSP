@@ -46,6 +46,7 @@ literate=
   {ç}{{\c c}}1 {Ç}{{\c C}}1 {ø}{{\o}}1 {å}{{\r a}}1 {Å}{{\r A}}1
   {€}{{\EUR}}1 {£}{{\pounds}}1
 }
+\usepackage[french,onelanguage,ruled,lined,linesnumbered]{algorithm2e}
 \author{\textsc{TRAN Quoc Nhat Han} \& \textsc{Adrien WARTELLE}}
 \title{Rapport de projet OS13\\Analyse de politique de maintenance}
 \date{\today}
@@ -220,7 +221,7 @@ En observant multiples systèmes identiques, nous effectuons des mesures de dég
 
 La valeur limite de dégradation est $L=20$. C'est-à-dire lorsque le niveau de dégradation dépasse $L$, le système tombe en panne et nous ne pourrons plus le mesurer.
 
-On souhaite de mettre en place une politique de maintenance conditionnelle, basée sur un seuil $M$ inférieur à $L$ et l'intervalle de temps $\Delta T$ entre les inspections. Appellons $X_t$ le niveau de dégradation à l'instant $t$ (instant d'une inspection).
+On souhaite de mettre en place une politique de maintenance conditionnelle, basée sur un seuil $M$ inférieur à $L$ et l'intervalle de temps $\Delta T$ entre les inspections répétive. Appellons $X_t$ le niveau de dégradation à l'instant $t$ (instant d'une inspection).
 \begin{itemize}
     \item Si $X_t < M$, nous laissons le système tel quel.
     \item Si $M \leq X_t < L$, un remplacement préventif est réalisé au coût $c_p$. Et puis $X_t$ est remis à $0$.
@@ -264,7 +265,14 @@ Un test rapide de Kolmogorov-Smirnov nous donne $p-value = 0.8651934$, indiquant
     \label{fig:histo_dens_degrad}
 \end{figure}
 
-D'autant plus, si nous refaisons les calculs ci-dessus avec $\delta = 1.6, 2.4, 3.2, etc.$, nous voyons les valeurs de $a$ et $b$ ne varient pas trop. Alors, nous choisissons le couple $(a,b)$ avec $p$ le plus grand. ($\delta$ trop grand réduira nombreux de données, résultant moins précision)
+D'autant plus, si nous refaisons les calculs ci-dessus avec $\delta = 1.6, 2.4, 3.2, etc.$, nous voyons les valeurs de $a$ et $b$ ne varient pas trop. Alors, nous choisissons le couple $(a,b)$ avec $p$ le plus grand. ($\delta$ trop grand réduira nombreux de données, résultant une perte importante de précision)
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=\textwidth]{histo_dens_degrad_1_6.png}
+    \caption{Histogramme et la courbe de densité estimé des incréments de l'intervalle $\delta = 1.6$}
+    \label{fig:histo_dens_degrad_1_6}
+\end{figure}
 
 \begin{table}[!h]
     \centering
@@ -284,23 +292,117 @@ D'autant plus, si nous refaisons les calculs ci-dessus avec $\delta = 1.6, 2.4, 
 
 Au final, $X(t) - X(s) \sim \Gamma(a(t-s),b) \forall t > s > 0$ avec $$(a,b) = (3.0207719;1.2091646)$$
 
-\begin{figure}[!h]
-    \centering
-    \includegraphics[width=\textwidth]{histo_dens_degrad_1_6.png}
-    \caption{Histogramme et la courbe de densité estimé des incréments de l'intervalle $\delta = 1.6$}
-    \label{fig:histo_dens_degrad_1_6}
-\end{figure}
-
 \subsection{La politique de maintenance basée sur dégradation}
 
-Cette politique, outre que $c_c=1200$ et $c_p=800$, introduit ainsi le coût d'inspection $c_i = 10$.
+Cette politique, outre que $c_c=1200$ et $c_p=800$, introduit ainsi le coût d'inspection répétive $c_i = 10$.
 
 Soit $S$ la variable aléatoire représentant la date de remplacement; $C(S)$ est le coût de maintenance cumulé à l’instant $S$, et $N(S)$ le nombre d'inspections depuis la dernière remplacement jusqu'à $S$.
 
 \begin{equation}
     \label{c_s_de}
-    C\left( S \right) = {c_i}N\left( S \right) + {c_p}{\mathbb{I}_{\left\{ {L > {X_t} \geqslant M} \right\}}} + {c_c}{\mathbb{I}_{\left\{ {{X_t} \geqslant L} \right\}}}
+    C\left( S \right) = {c_i}N\left( S \right) + {c_p}{\mathbb{I}_{\left\{ {L > {X_{N\left( S \right)}} \geq M} \right\}}} + {c_c}{\mathbb{I}_{\left\{ {{X_{N\left( S \right)}} \geq L} \right\}}}
 \end{equation}
+
+Posons ${F_t} = \Gamma \left( {at,b} \right)$ et les instants d'inspections ${t_1},{t_2},...,{t_{N\left( S \right)}}$ avec ${t_{j + 1}} - {t_j} = \Delta T$. Puisque $t_0 = 0$, nous aurons ${t_k} = k\Delta T$.
+
+Comme le calcul analytique de $C(S)$ et $N(S)$ devient grossier, nous passons à la méthode Monté Carlo, qui nous permet d'estimer la vraie valeur en répéter un nombre suffisant de simulations.
+
+\begin{algorithm}[!h]
+    \caption{Mesurer la durée de vie d'un processus}
+    \label{algo:s}
+    \KwIn{Le processus $p$, l'intervalle d'inspection $\Delta T$, le seuil $M$}
+    \KwOut{La durée de vie $S$}
+    $len \leftarrow $ longeur de $p$\;
+    \eIf{$p_{len} < M$}{
+        \tcp{La simulation n'est pas suffisante longue}
+        \Return{0}
+    }{
+        $n_s \leftarrow$ le dernier index de $p$ tel que $p_{n_s} < M$\;
+        \Return{$n_s + 1$}
+    }
+\end{algorithm}
+
+\begin{algorithm}[!h]
+    \caption{Mesurer le coût de maintenance d'un processus}
+    \label{algo:c_s}
+    \KwIn{Le processus $p$, le seuil $M$}
+    \KwOut{Le coût de maintenance $C(S)$}
+    $cout \leftarrow 0$\;
+    $len \leftarrow $ longeur de $p$\;
+    \If{$p_{len} \geq M$}{
+        $n_s \leftarrow$ le dernier index de $p$ tel que $p_{n_s} < M$\;
+        \tcp{$n_s$ correspond le nombre d'inspection}
+        $cout \leftarrow cout + c_i * n_s$\;
+        \tcp{A l'inspection suivante}
+        \eIf{$p_{n_s + 1} \geq L$}{
+            \tcp{Le système est tombé en panne}
+            $cout \leftarrow cout + c_c$\;
+        }{
+            \tcp{Le système fonctionne encore}
+            $cout \leftarrow cout + c_p$\;
+        }
+    }
+    \tcp{Le coût est zéro si le niveau de dégradation ne dépasse pas encore $M$}
+    \Return{$cout$}
+\end{algorithm}
+
+\begin{algorithm}[!h]
+    \caption{Simulation de processus et calculer $\widehat{\mathbb{E}(C)}$}
+    \label{algo:e_c}
+    \KwIn{L'intervalle d'inspection $\Delta T$, le seuil $M$, le nombre de simulation $nSim$, le nombre d'inspection maximale $nStep$}
+    \KwOut{La valeur approximative $\widehat{\mathbb{E}(C)}$}
+    Générer la matrice de l'incréments $simStep$ de taille $nSim \times nStep$ aux valeurs aléatoires selon la loi $\Gamma(a\Delta T, b)$\;
+    Calculer la matrice de processus $simProc$ de taille $nSim \times nStep$ en faisant la somme cumulative de $simStep$ horizontallement\;
+    $simTime \leftarrow$ les durées de vie de processus en appliquant l'algorithme \eqref{algo:s}\;
+    $simCost \leftarrow$ les coûts de processus en appliquant l'algorithme \eqref{algo:c_s}\;
+    $meanSimCost \leftarrow$ la moyenne de tous les coûts non nuls de $simCost$\;
+    $meanSimTime \leftarrow$ la moyenne de durée de vie non nuls de $simTime$\;
+    $meanCostTime \leftarrow \frac{meanSimCost}{meanSimTime}$\;
+    \tcp{Si $meanSimCost$ ou $meanSimTime$ est \texttt{NaN} : $meanCostTime \leftarrow MAX\_DOUBLE$}
+    \Return{$meanCostTime$}
+\end{algorithm}
+
+\begin{algorithm}[!h]
+    \caption{Optimiser la politique de maintenance basée sur dégradation}
+    \label{algo:optim_degrad}
+    \KwIn{$[L_{\Delta T}, U_{\Delta T}]$ l'intervalle de recherche de $\Delta T$, $[L_{M}, U_{M}]$ l'intervalle de recherche de $M$, $\tau$ tolérance, $d_{\Delta T}$ nombre de points à évaluer pour $\Delta T$, $d_M$ nombre de points à évaluer pour $M$, $e_{\Delta T}$ ratio de réduction sur l'intervalle de $\Delta T$, $e_M$ ratio de réduction sur l'intervalle de $M$}
+    \KwOut{$\Delta T^*$, $M^*$ et $o^*$ valeur objective optimale}
+    \tcp{Suivre le principe de diachotomie}
+    \While{${\left( {\frac{{{L_{\Delta T}} - {U_{\Delta T}}}}{{{d_{\Delta T}}}}} \right)^2} + {\left( {\frac{{{L_M} - {U_M}}}{{{d_M}}}} \right)^2} \geqslant \tau $}{
+        \tcp{Evaluer}
+        $I_{\Delta T} \leftarrow$ l'ensemble de $d_{\Delta T}$ points égaux-distances de $[L_{\Delta T}, U_{\Delta T}]$\;
+        $I_{M} \leftarrow$ l'ensemble de $d_{M}$ points égaux-distances de $[L_{M}, U_{M}]$\;
+        $Z \leftarrow $ résultats d'appliquer l'algorithme \ref{algo:e_c} pour chaque point sur la grille $I_{\Delta T} \times I_M$\;
+        \tcp{Chercher le minimum}
+        $(i^*,j^*) \leftarrow $ l'indice de premier minimum de $Z$\;
+        $\Delta T^* \leftarrow $ l'élément $i^*$-ième de $I_{\Delta T}$\;
+        $M^* \leftarrow $ l'élément $j^*$-ième de $I_{M}$\;
+        $o^* \leftarrow Z_{i^*,j^*}$\;
+        \tcp{Ajuster la nouveau zone de recherche au tour du minimum actuel}
+        ${l_{\Delta T}} \leftarrow {L_{\Delta T}} - {U_{\Delta T}}$\;
+        ${l_M} \leftarrow {L_M} - {U_M}$\;
+        ${L_{\Delta T}} \leftarrow \min \left( {\Delta {T^*} + \frac{{{l_{\Delta T}}}}{{{d_{\Delta T}}}},{L_{\Delta T}}} \right)$\;
+        ${U_{\Delta T}} \leftarrow \max \left( {\Delta {T^*} - \frac{{{l_{\Delta T}}}}{{{d_{\Delta T}}}},{U_{\Delta T}}} \right)$\;
+        ${L_M} \leftarrow \min \left( {{M^*} + \frac{{{l_M}}}{{{d_M}}},{L_M}} \right)$\;
+        ${U_M} \leftarrow \max \left( {{M^*} - \frac{{{l_M}}}{{{d_M}}},{U_M}} \right)$\;
+    }
+    \Return{$(\Delta T^*, M^*, o^*)$}
+\end{algorithm}
+
+Le code implémenté se situe à l'annexe \ref{annexe:optim_degrad}. 
+
+Bien que le résultat n'est pas stable, nous pouvons arriver à une valeur approximative après plusieurs fois d'appliquer l'algorithme \ref{algo:optim_degrad} sur l'intervalle $[0.1, 4.1] \times [1, 20]$ : 
+\begin{equation*}
+    (\Delta T^*, M^*, o^*) = (0.1133949, 17.83996, 30.63433)
+\end{equation*}
+
+\begin{figure}
+    \centering
+    \caption{Représentation graphique de $E(C)$}
+    \label{fig:e_c}
+    \includegraphics[width=0.8\textwidth]{E_C_degrad.png}
+\end{figure}
+
 \clearpage
 \section{Annexe}
 \subsection{L'importation de données de pannes}
@@ -324,7 +426,9 @@ Soit $S$ la variable aléatoire représentant la date de remplacement; $C(S)$ es
 \subsection{Estimation de paramètres de dégradations}
 \label{annexe:estim_degrad}
 \lstinputlisting[language=R]{estime_degrad.R}
-
+\subsection{Optimisation de maintenance basée sur dégradations}
+\label{annexe:optim_degrad}
+\lstinputlisting[language=R]{optimize_degrad_montecarlo.R}
 \begin{thebibliography}{9}
     \bibitem{bib:gamma} Minka, Thomas P. (2002). "Estimating a Gamma distribution"
 

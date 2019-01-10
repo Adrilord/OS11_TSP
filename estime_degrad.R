@@ -43,4 +43,16 @@ curve(
 )
 # Kolmogorov-Smirnov test
 test = ks.test(increments, "pgamma", a * delta, b)
-c(delta, a, b, test$p.value)
+c(delta, a, b, test$p.value) # Print values
+# PDF
+f = function(x, t) {
+    dgamma(x, shape = a * t, rate = b)
+}
+# CDF
+F = function(x, t) {
+    pgamma(x, shape = a * t, rate = b)
+}
+# Generator
+rG = function(n, t) {
+    rgamma(n, shape = a *t, rate = b)
+}
