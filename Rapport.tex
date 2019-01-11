@@ -47,6 +47,7 @@ literate=
   {€}{{\EUR}}1 {£}{{\pounds}}1
 }
 \usepackage[french,onelanguage,ruled,lined,linesnumbered]{algorithm2e}
+\SetKw{Or}{ou}
 \author{\textsc{TRAN Quoc Nhat Han} \& \textsc{Adrien WARTELLE}}
 \title{Rapport de projet OS13\\Analyse de politique de maintenance}
 \date{\today}
@@ -325,8 +326,11 @@ Comme le calcul analytique de $C(S)$ et $N(S)$ devient grossier, nous passons à
 \begin{algorithm}[!h]
     \caption{Mesurer la durée de vie d'un processus}
     \label{algo:s}
-    \KwIn{Le processus $p$, l'intervalle d'inspection $\Delta T$, le seuil $M$}
-    \KwOut{La durée de vie $S$}
+    \KwIn{$p$ le processus\newline
+        $\Delta T$ l'intervalle d'inspection\newline
+        $M$ le seuil de maintenance préventive
+    }
+    \KwOut{$S$ la durée de vie}
     $len \leftarrow $ longeur de $p$\;
     \eIf{$p_{len} < M$}{
         \tcp{La simulation n'est pas suffisante longue}
@@ -340,8 +344,10 @@ Comme le calcul analytique de $C(S)$ et $N(S)$ devient grossier, nous passons à
 \begin{algorithm}[!h]
     \caption{Mesurer le coût de maintenance d'un processus}
     \label{algo:c_s}
-    \KwIn{Le processus $p$, le seuil $M$}
-    \KwOut{Le coût de maintenance $C(S)$}
+    \KwIn{$p$ le processus\newline
+    $M$ le seuil
+    }
+    \KwOut{$C(S)$ le coût de maintenance}
     $cout \leftarrow 0$\;
     $len \leftarrow $ longeur de $p$\;
     \If{$p_{len} \geq M$}{
@@ -362,10 +368,13 @@ Comme le calcul analytique de $C(S)$ et $N(S)$ devient grossier, nous passons à
 \end{algorithm}
 
 \begin{algorithm}[!h]
-    \caption{Simulation de processus et calculer $\widehat{\mathbb{E}(C)}$}
+    \caption{Simuler le processus et calculer $\widehat{\mathbb{E}(C)}$}
     \label{algo:e_c}
-    \KwIn{L'intervalle d'inspection $\Delta T$, le seuil $M$, le nombre de simulation $nSim$, le nombre d'inspection maximale $nStep$}
-    \KwOut{La valeur approximative $\widehat{\mathbb{E}(C)}$}
+    \KwIn{$\Delta T$ l'intervalle d'inspection\newline
+    $M$ le seuil\newline
+    $nSim$ le nombre de simulation\newline
+    $nStep$ le nombre d'inspection maximale}
+    \KwOut{$\widehat{\mathbb{E}(C)}$ la valeur approximative}
     Générer la matrice de l'incréments $simStep$ de taille $nSim \times nStep$ aux valeurs aléatoires selon la loi $\Gamma(a\Delta T, b)$\;
     Calculer la matrice de processus $simProc$ de taille $nSim \times nStep$ en faisant la somme cumulative de $simStep$ horizontallement\;
     $simTime \leftarrow$ les durées de vie de processus en appliquant l'algorithme \eqref{algo:s}\;
@@ -373,27 +382,42 @@ Comme le calcul analytique de $C(S)$ et $N(S)$ devient grossier, nous passons à
     $meanSimCost \leftarrow$ la moyenne de tous les coûts non nuls de $simCost$\;
     $meanSimTime \leftarrow$ la moyenne de durée de vie non nuls de $simTime$\;
     $meanCostTime \leftarrow \frac{meanSimCost}{meanSimTime}$\;
-    \tcp{Si $meanSimCost$ ou $meanSimTime$ est \texttt{NaN} : $meanCostTime \leftarrow MAX\_DOUBLE$}
+    \If{$meanSimCost$ est \texttt{NaN} \Or $meanSimTime$ est \texttt{NaN}}{
+        $meanCostTime \leftarrow MAX\_DOUBLE$\;
+    }
     \Return{$meanCostTime$}
 \end{algorithm}
 
 \begin{algorithm}[!h]
     \caption{Optimiser la politique de maintenance basée sur dégradation}
     \label{algo:optim_degrad}
-    \KwIn{$[L_{\Delta T}, U_{\Delta T}]$ l'intervalle de recherche de $\Delta T$, $[L_{M}, U_{M}]$ l'intervalle de recherche de $M$, $\tau$ tolérance, $d_{\Delta T}$ nombre de points à évaluer pour $\Delta T$, $d_M$ nombre de points à évaluer pour $M$, $e_{\Delta T}$ ratio de réduction sur l'intervalle de $\Delta T$, $e_M$ ratio de réduction sur l'intervalle de $M$}
-    \KwOut{$\Delta T^*$, $M^*$ et $o^*$ valeur objective optimale}
+    \KwIn{$[L_{\Delta T}, U_{\Delta T}]$ l'intervalle de recherche de $\Delta T$\newline
+        $[L_{M}, U_{M}]$ l'intervalle de recherche de $M$\newline
+        $\tau$ la tolérance\newline
+        $d_{\Delta T}$ le nombre de points à évaluer pour $\Delta T$\newline
+        $d_M$ le nombre de points à évaluer pour $M$\newline
+        $e_{\Delta T}$ le ratio de réduction sur l'intervalle de $\Delta T$\newline
+        $e_M$ le ratio de réduction sur l'intervalle de $M$
+    }
+    \KwOut{$\Delta T^*$ l'intervalle d'inspection optimal\newline
+        $M^*$ le seuil optimal\newline
+        $o^*$ la valeur objective optimale
+    }
     \tcp{Suivre le principe de diachotomie}
-    \While{${\left( {\frac{{{L_{\Delta T}} - {U_{\Delta T}}}}{{{d_{\Delta T}}}}} \right)^2} + {\left( {\frac{{{L_M} - {U_M}}}{{{d_M}}}} \right)^2} \geqslant \tau $}{
+    $\Delta T^* \leftarrow 0$\;
+    $M^* \leftarrow 0$\;
+    $o^* \leftarrow 0$\;
+    \While{${\left( {\frac{{{L_{\Delta T}} - {U_{\Delta T}}}}{{{d_{\Delta T}}}}} \right)^2} + {\left( {\frac{{{L_M} - {U_M}}}{{{d_M}}}} \right)^2} \geqslant \tau^2 $}{
         \tcp{Evaluer}
         $I_{\Delta T} \leftarrow$ l'ensemble de $d_{\Delta T}$ points égaux-distances de $[L_{\Delta T}, U_{\Delta T}]$\;
         $I_{M} \leftarrow$ l'ensemble de $d_{M}$ points égaux-distances de $[L_{M}, U_{M}]$\;
-        $Z \leftarrow $ résultats d'appliquer l'algorithme \ref{algo:e_c} pour chaque point sur la grille $I_{\Delta T} \times I_M$\;
+        $Z \leftarrow $ résultats d'appliquer l'algorithme \eqref{algo:e_c} pour chaque point sur la grille $I_{\Delta T} \times I_M$\;
         \tcp{Chercher le minimum}
         $(i^*,j^*) \leftarrow $ l'indice de premier minimum de $Z$\;
         $\Delta T^* \leftarrow $ l'élément $i^*$-ième de $I_{\Delta T}$\;
         $M^* \leftarrow $ l'élément $j^*$-ième de $I_{M}$\;
         $o^* \leftarrow Z_{i^*,j^*}$\;
-        \tcp{Ajuster la nouveau zone de recherche au tour du minimum actuel}
+        \tcp{Ajuster la nouveau zone de recherche autour du minimum actuel}
         ${l_{\Delta T}} \leftarrow {L_{\Delta T}} - {U_{\Delta T}}$\;
         ${l_M} \leftarrow {L_M} - {U_M}$\;
         ${L_{\Delta T}} \leftarrow \min \left( {\Delta {T^*} + \frac{{{l_{\Delta T}}}}{{{d_{\Delta T}}}},{L_{\Delta T}}} \right)$\;
@@ -406,14 +430,14 @@ Comme le calcul analytique de $C(S)$ et $N(S)$ devient grossier, nous passons à
 
 Le code implémenté se situe à l'annexe \ref{annexe:optim_degrad}. 
 
-Bien que le résultat n'est pas stable, nous pouvons arriver à une valeur approximative après plusieurs fois d'appliquer l'algorithme \ref{algo:optim_degrad} sur l'intervalle $[0.1, 4.1] \times [1, 20]$ : 
+Bien que le résultat n'est pas stable, nous pouvons arriver à une valeur approximative après plusieurs fois d'appliquer l'algorithme \ref{algo:optim_degrad} sur l'intervalle $[0.001, 4] \times [0, 20]$ : 
 \begin{equation*}
-    (\Delta T^*, M^*, o^*) = (0.1133949, 17.83996, 30.63433)
+    (\Delta T^*, M^*, o^*) = (0.001 \text{ (mille heures)}, 17.97877, 10.1182 \text{ (euros/mille heures)})
 \end{equation*}
 
 Ce résultat nous semble logique car :
 \begin{itemize}
-    \item $\Delta T^*$ faible (et $c_i$ pas cher) nous permet d'observer mieux et just à temps le système.
+    \item $\Delta T^*$ faible (grâce à $c_i$ pas cher) nous permet d'observer mieux et just à temps le système.
     \item $M^*$ pas trop loin de $L$ va remplacer la plupart de $c_c$ par $c_p$ pour économiser.
 \end{itemize}
 

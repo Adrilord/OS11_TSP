@@ -34,7 +34,7 @@ E_C = function(
     deltaT,
     M,
     nSim = 200,
-    nStep = 40,
+    nStep = floor(8 / deltaT), # 8 is the common life cycle from given data
     silence = TRUE
 ) {
     simStep = matrix(
@@ -128,6 +128,7 @@ optim_degrad = function(
         obj = obj
     ))
 }
+val = optim_degrad(0.001,4,0,20)
 # Illustration
 interval_deltaT = seq(0.1, 4.1, 0.5)
 interval_M = seq(1, 20, 1)
