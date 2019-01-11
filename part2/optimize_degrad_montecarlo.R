@@ -144,7 +144,7 @@ persp3d(
     xlab = "deltaT",
     ylab = "M",
     zlab = "E_C",
-    zlim = c(100, 400),
+    zlim = c(0, 400),
     col = "lightblue"
 )
-rgl.snapshot(filename = "E_C_degrad.png")
+rgl.snapshot(filename = "img/E_C_degrad.png")
