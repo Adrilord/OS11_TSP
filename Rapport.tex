@@ -12,6 +12,7 @@
 \usepackage{url}
 \usepackage{hyperref}
 \usepackage{cleveref}
+\usepackage[section]{placeins}
 \usepackage{listings}
 \lstset{
 language=R,
@@ -176,9 +177,9 @@ Avant de lancer l'algorithme nous essayons d'obtenir un ensemble de paramètres 
 qui soient cohérent avec la distribution des données. Nous avons choisi 
 \[\left( {{p_{1_0}},{p_{2_0}},\lambda_{0} ,\alpha_{0} ,\beta_{0} } \right) = \left( {0.5;0.5;1;10;2} \right)\]
 
-\begin{figure}[!hbt]
+\begin{figure}[!h]
     \centering
-    \includegraphics[width=\textwidth]{img/loi_initiale_Exp_Gamma.png}
+    \includegraphics[width=0.8\textwidth]{img/loi_initiale_Exp_Gamma.png}
     \caption{Mixage de la loi Exponentielle et Gamma : paramètres initiaux}
     \label{mixage_init}
 \end{figure}
@@ -188,12 +189,14 @@ Après l'utilisation de l'algorithme EM, nous avons obtenu le résultat :
 
 D'où nous traçons la fonction de densité $f_\theta$ trouvé (figure \ref{mixage}) et réalisons un test de Kolmogorov-Smirnov qui donne $p-value=0,9663111$ signifiant $96,63\%$ de nous tromper si nous rejetons ce modèle. Nous l'acceptons alors, quoiqu'il ne génère pas 2 sommets comme la remarque initiale. Le code est trouvable à l'annexe \ref{annexe:em_exp_gamma}.
 
-\begin{figure}[!hbt]
+\begin{figure}[!h]
     \centering
-    \includegraphics[width=\textwidth]{img/EM_Exp_Gamma.png}
+    \includegraphics[width=0.8\textwidth]{img/EM_Exp_Gamma.png}
     \caption{Mixage de la loi Exponentielle et Gamma : paramètres finaux}
     \label{mixage}
 \end{figure}
+
+\FloatBarrier
 
 \subsection{La politique de maintenance basée sur l'âge}
 
@@ -321,7 +324,13 @@ Soit $S$ la variable aléatoire représentant la date de remplacement; $C(S)$ es
 
 Posons ${F_t} = \Gamma \left( {at,b} \right)$ et les instants d'inspections ${t_1},{t_2},...,{t_{N\left( S \right)}}$ avec ${t_{j + 1}} - {t_j} = \Delta T$. Puisque $t_0 = 0$, nous aurons ${t_k} = k\Delta T$ et $X_{t_k} \sim F_{k\Delta T}$.
 
-Comme le calcul analytique de $C(S)$ et $N(S)$ devient grossier, nous passons à la méthode Monté Carlo, qui nous permet d'estimer la vraie valeur en répéter un nombre suffisant de simulations.
+Comme le calcul analytique de $C(S)$ et $N(S)$ devient grossier (l'annexe \eqref{annexe:ana_e_c}), nous passons à la méthode Monté Carlo, qui nous permet d'estimer la vraie valeur en répétant un nombre suffisant de simulations.
+\begin{itemize}
+    \item L'algorithme \eqref{algo:s} calcule la durée de vie d'une simulation.
+    \item L'algorithme \eqref{algo:c_s} calcule le coùut d'une simulation.
+    \item L'algorithme \eqref{algo:c_s} simule multiples processus et retourne une valeur approximative de $\mathbb{E}(C)$.
+    \item L'algorithme \eqref{algo:optim_degrad} trouve l'optimum sur une zone de recherche.
+\end{itemize}
 
 \begin{algorithm}[!h]
     \caption{Mesurer la durée de vie d'un processus}
@@ -388,36 +397,6 @@ Comme le calcul analytique de $C(S)$ et $N(S)$ devient grossier, nous passons à
     \Return{$meanCostTime$}
 \end{algorithm}
 
-Puisque l'algorithme \eqref{algo:e_c} utilise de calcul matricielle pour accélérer la traitement, $nStep$ doit être fixé judicieusement pour qu'on aura pas "trop" de simulations où $X_{t_{nStep}} < M$ (ce qui va forcer les valeurs de $C(S)$ et $S$ à zéro selon les algorithmes \eqref{algo:s} et \eqref{algo:c_s}). Soit $\alpha$ la probabilité de cet événement.
-
-\begin{align*}
-    P\left( {{X_{{t_{nStep}}}} < M} \right) & = \alpha  \\
-    \Leftrightarrow {F_{nStep*\Delta T}}\left( M \right) & = \alpha \\
-    \Leftrightarrow \Gamma \left( {a*nStep*\Delta T,b} \right)\left( M \right) & = \alpha 
-\end{align*}
-
-Nous testons quelques valeurs de $F$. Comme $F$ est croissant, nous l'évaluons directement à $M=20$.
-
-\begin{table}[!h]
-    \centering
-    \begin{tabular}{|c|c|}
-      \hline
-      $nStep * \Delta T$ &  $\Gamma \left( {a*nStep*\Delta T,b} \right)\left( 20 \right)$\\
-      \hline
-      8 & 0.5284405 \\
-      10 & 0.1319799 \\
-      12 & 0.01300913 \\
-      13 & 0.002925565 \\
-      14 & 0.000533971 \\
-      \hline
-    \end{tabular}
-    \caption{Estimation de $nStep * \Delta T$}
-    \label{tab:nstep}
-\end{table}
-
-La fonction distribution décroît selon $nStep*\Delta T$. Et pourtant, $\alpha \leq 1\%$ nous suffit. Et plus grand $nStep$, plus lente la traitement. C'est pourquoi, basé sur la table \eqref{tab:nstep}, nous emploirons
-\[nStep = \left\lfloor {\frac{{13}}{{\Delta T}}} \right\rfloor \]
-
 \begin{algorithm}[!h]
     \caption{Optimiser la politique de maintenance basée sur dégradation}
     \label{algo:optim_degrad}
@@ -457,6 +436,37 @@ La fonction distribution décroît selon $nStep*\Delta T$. Et pourtant, $\alpha 
     }
     \Return{$(\Delta T^*, M^*, o^*)$}
 \end{algorithm}
+
+\FloatBarrier
+Puisque l'algorithme \eqref{algo:e_c} utilise de calcul matricielle pour accélérer la traitement, $nStep$ doit être fixé judicieusement pour qu'on aura pas "trop" de simulations où $X_{t_{nStep}} < M$ (ce qui va forcer les valeurs de $C(S)$ et $S$ à zéro selon les algorithmes \eqref{algo:s} et \eqref{algo:c_s}). Soit $\alpha$ la probabilité de cet événement.
+
+\begin{align*}
+    P\left( {{X_{{t_{nStep}}}} < M} \right) & = \alpha  \\
+    \Leftrightarrow {F_{nStep*\Delta T}}\left( M \right) & = \alpha \\
+    \Leftrightarrow \Gamma \left( {a*nStep*\Delta T,b} \right)\left( M \right) & = \alpha 
+\end{align*}
+
+Nous testons quelques valeurs de $F$. Comme $F$ est croissant, nous l'évaluons directement à $M=20$.
+
+\begin{table}[!h]
+    \centering
+    \begin{tabular}{|c|c|}
+      \hline
+      $nStep * \Delta T$ &  $\Gamma \left( {a*nStep*\Delta T,b} \right)\left( 20 \right)$\\
+      \hline
+      8 & 0.5284405 \\
+      10 & 0.1319799 \\
+      12 & 0.01300913 \\
+      13 & 0.002925565 \\
+      14 & 0.000533971 \\
+      \hline
+    \end{tabular}
+    \caption{Estimation de $nStep * \Delta T$}
+    \label{tab:nstep}
+\end{table}
+
+La fonction distribution décroît selon $nStep*\Delta T$. Et pourtant, $\alpha \leq 1\%$ nous suffit. Et plus grand $nStep$, plus lente la traitement. C'est pourquoi, basé sur la table \eqref{tab:nstep}, nous emploirons
+\[nStep = \left\lfloor {\frac{{13}}{{\Delta T}}} \right\rfloor \]
 
 Le code implémenté se situe à l'annexe \ref{annexe:optim_degrad}. 
 
@@ -503,6 +513,89 @@ Ce résultat nous semble logique car :
 \subsection{Estimation de paramètres de dégradations}
 \label{annexe:estim_degrad}
 \lstinputlisting[language=R]{part2/estime_degrad.R}
+\subsection{Calcul analytique de maintenance préventive}
+\label{annexe:ana_e_c}
+Rappelons que ${X_{{t_k}}} \sim {F_{k\Delta t}}$ et \eqref{c_s_de}:
+\[C\left( S \right) = {c_i}N\left( S \right) + {c_p}{\mathbb{I}_{\left\{ {L > {X_{N\left( S \right)}} \geqslant M} \right\}}} + {c_c}{\mathbb{I}_{\left\{ {{X_{N\left( S \right)}} \geqslant L} \right\}}}\]
+
+D'où
+\begin{align*}
+    \label{e_c_s_de}
+    \mathbb{E}\left( {C\left( S \right)} \right) & = {c_i}\mathbb{E}\left( {N\left( S \right)} \right) + {c_p}\mathbb{E}\left( {{I_{\left\{ {L > {X_{{t_{N\left( S \right)}}}} \geqslant M} \right\}}}} \right) \\
+    & + {c_c}\mathbb{E}\left( {{I_{\left\{ {{X_{{t_{N\left( S \right)}}}} \geqslant L} \right\}}}} \right)
+\end{align*}
+
+Détaillons le nombre moyen d'inspection $\mathbb{E}\left( {N\left( S \right)} \right)$ :
+\[\mathbb{E}\left( {N\left( S \right)} \right) = \sum\limits_{k = 1}^\infty  {kP\left( {N\left( S \right) = k} \right)}  = P\left( {N\left( S \right) = 1} \right) + \sum\limits_{k = 2}^\infty  {kP\left( {N\left( S \right) = k} \right)} \]
+
+Or
+\begin{align*}
+    P\left( {N\left( S \right) = 1} \right) & = P\left( {{X_{{t_1}}} \geqslant M} \right) \\
+    & = 1 - {F_{\Delta T}}\left( M \right) \\
+    P\left( {N\left( S \right) = k} \right) & = P\left( {{X_{{t_k}}} \geqslant M \wedge {X_{{t_{k - 1}}}} < M} \right) \\
+    & = P\left( {\Delta X \geqslant M - {X_{{t_{k - 1}}}} \wedge {X_{{t_{k - 1}}}} < M} \right) \\
+    & = \int_0^M {P\left( {\Delta X \geqslant M - \xi } \right)P\left( {{X_{{t_{k - 1}}}} = \xi } \right)d\xi }\\
+    & = \int_0^M {\left( {1 - {F_{\Delta T}}\left( {M - \xi } \right)} \right){f_{\left( {k - 1} \right)\Delta T}}\left( \xi  \right)d\xi } \\
+    & = \int_0^M {{f_{\left( {k - 1} \right)\Delta T}}\left( \xi  \right)d\xi }  - \int_0^M {{F_{\Delta T}}\left( {M - \xi } \right){f_{\left( {k - 1} \right)\Delta T}}\left( \xi  \right)d\xi } \\
+    & = {F_{\left( {k - 1} \right)\Delta T}}\left( M \right) - \int_0^M {{F_{\Delta T}}\left( {M - \xi } \right){f_{\left( {k - 1} \right)\Delta T}}\left( \xi  \right)d\xi }
+\end{align*}
+
+Par conséquence, 
+\begin{align}
+    \label{e_n_s_de}
+    \mathbb{E}\left( {N\left( S \right)} \right) & = 1 - {F_{\Delta T}}\left( M \right) \nonumber \\
+    & + \sum\limits_{k = 2}^\infty  {k\left( {{F_{\left( {k - 1} \right)\Delta T}}\left( M \right) - \int_0^M {{F_{\Delta T}}\left( {M - \xi } \right){f_{\left( {k - 1} \right)\Delta T}}\left( \xi  \right)d\xi } } \right)}
+\end{align}
+
+En suite, nous exprimons la probabilité de maintenance préventive :
+\begin{align*}
+    & \mathbb{E}\left( {{\mathbb{I}_{\left\{ {L > {X_{{t_{N\left( S \right)}}}} \geqslant M} \right\}}}} \right) = \sum\limits_{k = 1}^\infty  {P\left( {L > {X_{{t_k}}} \geqslant M|{X_{{t_{k - 1}}}} < M} \right)} \\
+    & k = 1 :\, P\left( {L > {X_{{t_1}}} \geqslant M} \right) = {F_{\Delta T}}\left( L \right) - {F_{\Delta T}}\left( M \right) \\
+    & \forall k \geqslant 2 : \\
+    & P\left( {L > {X_{{t_k}}} \geqslant M|{X_{{t_{k - 1}}}} < M} \right) \\
+    & = \frac{{P\left( {L > {X_{{t_k}}} \geqslant M \wedge {X_{{t_{k - 1}}}} < M} \right)}}{{P\left( {{X_{{t_{k - 1}}}} < M} \right)}} \\
+    & = \frac{{P\left( {{X_{{t_{k - 1}}}} < M \wedge \Delta X \geqslant M - {X_{{t_{k - 1}}}} \wedge \Delta X < L - {X_{{t_{k - 1}}}}} \right)}}{{P\left( {{X_{{t_{k - 1}}}} < M} \right)}} \\
+    & = \frac{{\int_0^M {P\left( {\Delta X \geqslant M - \xi  \wedge \Delta X < L - \xi } \right)P\left( {{X_{{t_{k - 1}}}} = \xi } \right)d\xi } }}{{{F_{\left( {k - 1} \right)\Delta T}}\left( M \right)}} \\
+    & = \frac{{\int_0^M {\left( {{F_{\Delta T}}\left( {L - \xi } \right) - {F_{\Delta T}}\left( {M - \xi } \right)} \right){f_{\left( {k - 1} \right)\Delta T}}\left( \xi  \right)d\xi } }}{{{F_{\left( {k - 1} \right)\Delta T}}\left( M \right)}}
+\end{align*}
+
+Ceci induit que :
+\begin{align}
+    \label{p_p_de}
+    & \mathbb{E}\left( {{\mathbb{I}_{\left\{ {L > {X_{{t_{N\left( S \right)}}}} \geqslant M} \right\}}}} \right) = {F_{\Delta T}}\left( L \right) - {F_{\Delta T}}\left( M \right) \nonumber \\
+    & + \sum\limits_{k = 2}^\infty  {\frac{{\int_0^M {\left( {{F_{\Delta T}}\left( {L - \xi } \right) - {F_{\Delta T}}\left( {M - \xi } \right)} \right){f_{\left( {k - 1} \right)\Delta T}}\left( \xi  \right)d\xi } }}{{{F_{\left( {k - 1} \right)\Delta T}}\left( M \right)}}}
+\end{align}
+
+Puis, de même manière, la probabilité de maintenance corrective sera :
+\begin{align*}
+    & \mathbb{E}\left( {{\mathbb{I}_{\left\{ {{X_{{t_{N\left( S \right)}}}} \geqslant L} \right\}}}} \right) = \sum\limits_{k = 1}^\infty  {P\left( {{X_{{t_k}}} \geqslant L|{X_{{t_{k - 1}}}} < M} \right)} \\
+    & k = 1 : \, P\left( {{X_{{t_1}}} \geqslant L} \right) = {F_{\Delta T}}\left( L \right) \\
+    & \forall k \geqslant 2: \\
+    & P\left( {{X_{{t_k}}} \geqslant L|{X_{{t_{k - 1}}}} < M} \right) \\
+    & = \frac{{P\left( {{X_{{t_k}}} \geqslant L \wedge {X_{{t_{k - 1}}}} < M} \right)}}{{P\left( {{X_{{t_{k - 1}}}} < M} \right)}} \\
+    & = \frac{{P\left( {\Delta X \geqslant L - {X_{{t_{k - 1}}}} \wedge {X_{{t_{k - 1}}}} < M} \right)}}{{P\left( {{X_{{t_{k - 1}}}} < M} \right)}} \\
+    & = \frac{{\int_0^M {P\left( {\Delta X \geqslant L - \xi } \right)P\left( {{X_{{t_{k - 1}}}} = \xi } \right)d\xi } }}{{P\left( {{X_{{t_{k - 1}}}} < M} \right)}}\\
+    & = \frac{{\int_0^M {\left( {1 - {F_{\Delta T}}\left( {L - \xi } \right)} \right){f_{\left( {k - 1} \right)\Delta T}}\left( \xi  \right)d\xi } }}{{{F_{\left( {k - 1} \right)\Delta T}}\left( M \right)}}
+\end{align*}
+
+D'où :
+\begin{align}
+    \label{p_c_de}
+    & \mathbb{E}\left( {{\mathbb{I}_{\left\{ {{X_{{t_{N\left( S \right)}}}} \geqslant L} \right\}}}} \right) = {F_{\Delta T}}\left( L \right) \nonumber \\
+    & + \sum\limits_{k = 2}^\infty  {\frac{{\int_0^M {\left( {1 - {F_{\Delta T}}\left( {L - \xi } \right)} \right){f_{\left( {k - 1} \right)\Delta T}}\left( \xi  \right)d\xi } }}{{{F_{\left( {k - 1} \right)\Delta T}}\left( M \right)}}}
+\end{align}
+
+Attention, parce que nous considérons $S$ l'instant de la dernière inspection :
+\[S = {t_{N\left( S \right)}} = N\left( S \right)\Delta T \Rightarrow \mathbb{E}\left( S \right) = \mathbb{E}\left( {N\left( S \right)} \right)\Delta T\]
+
+Alors :
+\begin{align*}
+    \mathbb{E}\left( C \right) & = \frac{{\mathbb{E}\left( {C\left( S \right)} \right)}}{{\mathbb{E}\left( S \right)}} \\
+    & = \frac{{{c_i}\mathbb{E}\left( {N\left( S \right)} \right) + {c_p}\mathbb{E}\left( {{\mathbb{I}_{\left\{ {L > {X_{{t_{N\left( S \right)}}}} \geqslant M} \right\}}}} \right) + {c_c}\mathbb{E}\left( {{\mathbb{I}_{\left\{ {{X_{{t_{N\left( S \right)}}}} \geqslant L} \right\}}}} \right)}}{{\mathbb{E}\left( {N\left( S \right)} \right)\Delta T}} \\
+    & = \frac{{{c_i}}}{{\Delta T}} + \frac{1}{{\Delta T}}\frac{{{c_p}\mathbb{E}\left( {{\mathbb{I}_{\left\{ {L > {X_{{t_{N\left( S \right)}}}} \geqslant M} \right\}}}} \right) + {c_c}\mathbb{E}\left( {{\mathbb{I}_{\left\{ {{X_{{t_{N\left( S \right)}}}} \geqslant L} \right\}}}} \right)}}{{\mathbb{E}\left( {N\left( S \right)} \right)}}
+\end{align*}
+
+Substiter par \eqref{e_n_s_de}, \eqref{p_p_de} et \eqref{p_c_de} nous donnera le formule exacte de coût moyen par une durée de temps.
 \subsection{Optimisation de maintenance basée sur dégradations}
 \label{annexe:optim_degrad}
 \lstinputlisting[language=R]{part2/optimize_degrad_montecarlo.R}
