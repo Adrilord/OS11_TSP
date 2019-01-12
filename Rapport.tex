@@ -319,7 +319,7 @@ Soit $S$ la variable aléatoire représentant la date de remplacement; $C(S)$ es
     C\left( S \right) = {c_i}N\left( S \right) + {c_p}{\mathbb{I}_{\left\{ {L > {X_{N\left( S \right)}} \geq M} \right\}}} + {c_c}{\mathbb{I}_{\left\{ {{X_{N\left( S \right)}} \geq L} \right\}}}
 \end{equation}
 
-Posons ${F_t} = \Gamma \left( {at,b} \right)$ et les instants d'inspections ${t_1},{t_2},...,{t_{N\left( S \right)}}$ avec ${t_{j + 1}} - {t_j} = \Delta T$. Puisque $t_0 = 0$, nous aurons ${t_k} = k\Delta T$.
+Posons ${F_t} = \Gamma \left( {at,b} \right)$ et les instants d'inspections ${t_1},{t_2},...,{t_{N\left( S \right)}}$ avec ${t_{j + 1}} - {t_j} = \Delta T$. Puisque $t_0 = 0$, nous aurons ${t_k} = k\Delta T$ et $X_{t_k} \sim F_{k\Delta T}$.
 
 Comme le calcul analytique de $C(S)$ et $N(S)$ devient grossier, nous passons à la méthode Monté Carlo, qui nous permet d'estimer la vraie valeur en répéter un nombre suffisant de simulations.
 
@@ -388,6 +388,36 @@ Comme le calcul analytique de $C(S)$ et $N(S)$ devient grossier, nous passons à
     \Return{$meanCostTime$}
 \end{algorithm}
 
+Puisque l'algorithme \eqref{algo:e_c} utilise de calcul matricielle pour accélérer la traitement, $nStep$ doit être fixé judicieusement pour qu'on aura pas "trop" de simulations où $X_{t_{nStep}} < M$ (ce qui va forcer les valeurs de $C(S)$ et $S$ à zéro selon les algorithmes \eqref{algo:s} et \eqref{algo:c_s}). Soit $\alpha$ la probabilité de cet événement.
+
+\begin{align*}
+    P\left( {{X_{{t_{nStep}}}} < M} \right) & = \alpha  \\
+    \Leftrightarrow {F_{nStep*\Delta T}}\left( M \right) & = \alpha \\
+    \Leftrightarrow \Gamma \left( {a*nStep*\Delta T,b} \right)\left( M \right) & = \alpha 
+\end{align*}
+
+Nous testons quelques valeurs de $F$. Comme $F$ est croissant, nous l'évaluons directement à $M=20$.
+
+\begin{table}[!h]
+    \centering
+    \begin{tabular}{|c|c|}
+      \hline
+      $nStep * \Delta T$ &  $\Gamma \left( {a*nStep*\Delta T,b} \right)\left( 20 \right)$\\
+      \hline
+      8 & 0.5284405 \\
+      10 & 0.1319799 \\
+      12 & 0.01300913 \\
+      13 & 0.002925565 \\
+      14 & 0.000533971 \\
+      \hline
+    \end{tabular}
+    \caption{Estimation de $nStep * \Delta T$}
+    \label{tab:nstep}
+\end{table}
+
+La fonction distribution décroît selon $nStep*\Delta T$. Et pourtant, $\alpha \leq 1\%$ nous suffit. Et plus grand $nStep$, plus lente la traitement. C'est pourquoi, basé sur la table \eqref{tab:nstep}, nous emploirons
+\[nStep = \left\lfloor {\frac{{13}}{{\Delta T}}} \right\rfloor \]
+
 \begin{algorithm}[!h]
     \caption{Optimiser la politique de maintenance basée sur dégradation}
     \label{algo:optim_degrad}
@@ -431,9 +461,11 @@ Comme le calcul analytique de $C(S)$ et $N(S)$ devient grossier, nous passons à
 Le code implémenté se situe à l'annexe \ref{annexe:optim_degrad}. 
 
 Bien que le résultat n'est pas stable, nous pouvons arriver à une valeur approximative après plusieurs fois d'appliquer l'algorithme \ref{algo:optim_degrad} sur l'intervalle $[0.001, 4] \times [0, 20]$ : 
-\begin{equation*}
-    (\Delta T^*, M^*, o^*) = (0.001 \text{ (mille heures)}, 17.97877, 10.1182 \text{ (euros/mille heures)})
-\end{equation*}
+\begin{align*}
+    (\Delta T^*, M^*, o^*) = (& 0.001007627 \text{ (mille heures)},\\
+    & 18.58027,\\
+    & 10.10541 \text{ (euros/mille heures)})
+\end{align*}
 
 Ce résultat nous semble logique car :
 \begin{itemize}

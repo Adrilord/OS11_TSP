@@ -34,7 +34,7 @@ E_C = function(
     deltaT,
     M,
     nSim = 200,
-    nStep = floor(8 / deltaT), # 8 is the common life cycle from given data
+    nStep = floor(13 / deltaT),
     silence = TRUE
 ) {
     simStep = matrix(
