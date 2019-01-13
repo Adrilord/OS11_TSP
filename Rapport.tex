@@ -201,13 +201,13 @@ Nous avons tracé la fonction de densité $f_\theta$ trouvé (figure \ref{mixage
 
 \subsection{La politique de maintenance basée sur l'âge}
 
-Avec la fonction $f_\theta$ trouvée, nous allons pouvoir une politique optimale (selon le modèle) basée sur l'âge.
+Avec la fonction $f_\theta$ trouvée, nous allons pouvoir déterminer une politique optimale (selon le modèle) basée sur l'âge.
 
 Nous avons par définition : $S = \min \left( {X,{t_0}} \right)$.
 
 Autrement dit, $S = X{\mathbb{I}_{\left\{ {X < {t_0}} \right\}}} + {t_0}{\mathbb{I}_{\left\{ {X \geqslant {t_0}} \right\}}}$.
 
-Cela se traduit avec le coût : $C\left( S \right) = {C_c}{\mathbb{I}_{\left\{ {X < {t_0}} \right\}}} + {C_p}{\mathbb{I}_{\left\{ {X \geqslant {t_0}} \right\}}}$, avec $C_c, C_p$ les coûts de maintenances correctives et préventives respectivement.
+Cela se traduit avec le coût : $C\left( S \right) = {c_c}{\mathbb{I}_{\left\{ {X < {t_0}} \right\}}} + {c_p}{\mathbb{I}_{\left\{ {X \geqslant {t_0}} \right\}}}$, avec $c_c, c_p$ les coûts de maintenances correctives et préventives respectivement.
 
 Le coût moyen :
 \begin{align}
@@ -233,7 +233,7 @@ De \eqref{coutmoy} et \eqref{dureemoy}, nous détaillons le coût moyen sur une 
     \mathbb{E}\left( C \right) = \frac{{\mathbb{E}\left( {C\left( S \right)} \right)}}{{\mathbb{E}\left( S \right)}} = \frac{{\left( {{c_c} - {c_p}} \right){F_\theta }\left( {{t_0}} \right) + {c_p}}}{{{t_0} - \int_0^{{t_0}} {{F_\theta }\left( x \right)dx} }}
 \end{equation}
 
-L'annexe \eqref{annexe:optim_e_c} montre comment chercher l'optimum numériquement. La valeur minimum est $t_0 = 27,29639$ (mille heures), correspondant à un coût moyen de $210,6402$. Nous constatons que $t_0^{min}$ est très proche du maximum de durée de vie, indiquant que l'optimisation de $t_0$ est inutile car le système ne viellit que très peu\footnote{la loi de durée de vie trouvée est très proche d'une loi exponentielle car c'est celle-ci qui pré-pondère et cette loi implique un système toujours neuf (d'age 0), et donc sans besoin de maintenance basée sur l'âge. On peut facilement montrer que l'optimum de $t_{0}^{*}$ dans le cas exponentiel est infini.}.
+L'annexe \eqref{annexe:optim_e_c} montre comment chercher l'optimum numériquement. La valeur minimum est $t_0 = 27,29639$ (mille heures), correspondant à un coût moyen par durée de temps de $210,6402$ (euros / mille heures). Nous constatons que $t_0^{min}$ est très proche du maximum de durée de vie, indiquant que l'optimisation de $t_0$ est inutile car le système ne viellit que très peu.\footnote{La loi de durée de vie trouvée est très proche d'une loi exponentielle car c'est celle-ci qui pré-pondère et cette loi implique un système toujours neuf (d'age 0), et donc sans besoin de maintenance basée sur l'âge. On peut facilement montrer que l'optimum de $t_{0}^{*}$ dans le cas exponentiel est infini.}.
 
 \clearpage
 
@@ -247,7 +247,7 @@ On souhaite mettre en place une politique de maintenance conditionnelle, basée 
 \begin{itemize}
     \item Si $X_t < M$, nous laissons le système tel quel.
     \item Si $M \leq X_t < L$, un remplacement préventif est réalisé au coût $c_p$. Et puis $X_t$ est remis à $0$.
-    \item Si $X_t \geq L$, un remplacement correctif est fait au coût $c_c$. Et puis $X_t$ est remis à $0$.
+    \item Si $X_t \geq L$, un remplacement correctif est réalisé au coût $c_c$. Et puis $X_t$ est remis à $0$.
 \end{itemize}
 
 Le but est minimiser le coût moyen sur une durée de temps \eqref{coutmoyduree} en choisissant bien le seuil $M$ et l'intervalle d'inspection $\Delta T$.
@@ -257,9 +257,10 @@ Avec les données de \texttt{DegradLevel\_2.csv}, nous traçons leurs processus 
 
 Comme les temps d'inspection sont de l'ordre du millier, il faudrait les diviser par un scalaire (par example, $scale = 1000$) afin d'assurer la précision des calculs numériques.
 
-\begin{figure}
+\begin{figure}[!h]
     \centering
-    \includegraphics[width=\textwidth]{img/trace_degrad.png}
+    \includegraphics[width=0.8\textwidth]{img/trace_degrad.png}
+    \caption{Traçe de dégradation du système}
     \label{fig:trace_degrad}
 \end{figure}
 
@@ -269,7 +270,6 @@ Soit $X(t)$ la variable aléatoire de dégradation du système. Supposons que $X
 
 Fixons $t-s = \delta = 0.8$, car les mesures données sont effectués au bout de chaque intervalle de $0.8$.
 
-L'histogramme des incréments :
 \begin{figure}[!h]
     \centering
     \includegraphics[width=\textwidth]{img/histo_degrad.png}
@@ -331,7 +331,7 @@ Comme le calcul analytique de $C(S)$ et $N(S)$ devient grossier (l'annexe \eqref
 \begin{itemize}
     \item L'algorithme \eqref{algo:s} calcule la durée de vie d'une simulation.
     \item L'algorithme \eqref{algo:c_s} calcule le coût d'une simulation.
-    \item L'algorithme \eqref{algo:c_s} simule de multiples processus et retourne une valeur approximative de $\mathbb{E}(C)$.
+    \item L'algorithme \eqref{algo:e_c} simule de multiples processus et retourne une valeur approximative de $\mathbb{E}(C)$.
     \item L'algorithme \eqref{algo:optim_degrad} trouve l'optimum sur une zone de recherche.
 \end{itemize}
 
@@ -429,9 +429,10 @@ Comme le calcul analytique de $C(S)$ et $N(S)$ devient grossier (l'annexe \eqref
         $\Delta T^* \leftarrow $ l'élément $i^*$-ième de $I_{\Delta T}$\;
         $M^* \leftarrow $ l'élément $j^*$-ième de $I_{M}$\;
         $o^* \leftarrow Z_{i^*,j^*}$\;
-        \tcp{Ajuster la nouveau zone de recherche autour du minimum actuel}
+        \tcp{Ajuster la nouvelle zone de recherche autour du minimum actuel}
         ${l_{\Delta T}} \leftarrow {L_{\Delta T}} - {U_{\Delta T}}$\;
         ${l_M} \leftarrow {L_M} - {U_M}$\;
+        \tcp{La nouvelle zone ne doit pas déborder celle précédente}
         ${L_{\Delta T}} \leftarrow \min \left( {\Delta {T^*} + \frac{{{l_{\Delta T}}}}{{{e_{\Delta T}}}},{L_{\Delta T}}} \right)$\;
         ${U_{\Delta T}} \leftarrow \max \left( {\Delta {T^*} - \frac{{{l_{\Delta T}}}}{{{e_{\Delta T}}}},{U_{\Delta T}}} \right)$\;
         ${L_M} \leftarrow \min \left( {{M^*} + \frac{{{l_M}}}{{{e_M}}},{L_M}} \right)$\;
@@ -442,7 +443,6 @@ Comme le calcul analytique de $C(S)$ et $N(S)$ devient grossier (l'annexe \eqref
 
 \FloatBarrier
 Puisque l'algorithme \eqref{algo:e_c} utilise du calcul matriciel pour accélérer le traitement, $nStep$ doit être fixé judicieusement pour ne pas avoir "trop" de simulations où $X_{t_{nStep}} < M$ (ce qui va forcer les valeurs de $C(S)$ et $S$ à zéro selon les algorithmes \eqref{algo:s} et \eqref{algo:c_s}). Soit $\alpha$ la probabilité de cet événement.
-
 \begin{align*}
     P\left( {{X_{{t_{nStep}}}} < M} \right) & = \alpha  \\
     \Leftrightarrow {F_{nStep*\Delta T}}\left( M \right) & = \alpha \\
@@ -468,12 +468,12 @@ Nous testons quelques valeurs de $F$. Comme $F$ est croissant, nous l'évaluons 
     \label{tab:nstep}
 \end{table}
 
-La fonction distribution décroît selon $nStep*\Delta T$. Et pourtant, $\alpha \leq 1\%$ nous suffit. Et plus grand $nStep$, plus lente la traitement. C'est pourquoi, basé sur la table \eqref{tab:nstep}, nous emploirons
+La fonction distribution décroît selon $nStep*\Delta T$. Et pourtant, $\alpha \leq 1\%$ nous suffit. D'autant plus, la traitement ralentit remarquablement lorsque $nStep$ est grand. C'est pourquoi, basé sur la table \eqref{tab:nstep}, nous emploirons
 \[nStep = \left\lfloor {\frac{{13}}{{\Delta T}}} \right\rfloor \]
 
 Le code implémenté se situe à l'annexe \ref{annexe:optim_degrad}. 
 
-Bien que le résultat n'est pas stable, nous pouvons arriver à une valeur approximative après plusieurs itérations de l'algorithme \ref{algo:optim_degrad} sur l'intervalle $[0.001, 4] \times [0, 20]$ : 
+Bien que le résultat n'est pas stable à cause de l'approche Monté Carlo, nous pouvons arriver à une valeur approximative après plusieurs itérations de l'algorithme \eqref{algo:optim_degrad} sur l'intervalle $[0.001, 4] \times [0, 20]$ : 
 \begin{align*}
     (\Delta T^*, M^*, o^*) = (& 0.001007627 \text{ (mille heures)},\\
     & 18.58027,\\
@@ -516,7 +516,7 @@ Ce résultat nous semble logique car :
 \subsection{Estimation de paramètres de dégradations}
 \label{annexe:estim_degrad}
 \lstinputlisting[language=R]{part2/estime_degrad.R}
-\subsection{Calcul analytique de maintenance préventive}
+\subsection{Calcul analytique de maintenance conditionnelle}
 \label{annexe:ana_e_c}
 Rappelons que ${X_{{t_k}}} \sim {F_{k\Delta t}}$ et \eqref{c_s_de}:
 \[C\left( S \right) = {c_i}N\left( S \right) + {c_p}{\mathbb{I}_{\left\{ {L > {X_{N\left( S \right)}} \geqslant M} \right\}}} + {c_c}{\mathbb{I}_{\left\{ {{X_{N\left( S \right)}} \geqslant L} \right\}}}\]
@@ -524,8 +524,8 @@ Rappelons que ${X_{{t_k}}} \sim {F_{k\Delta t}}$ et \eqref{c_s_de}:
 D'où
 \begin{align*}
     \label{e_c_s_de}
-    \mathbb{E}\left( {C\left( S \right)} \right) & = {c_i}\mathbb{E}\left( {N\left( S \right)} \right) + {c_p}\mathbb{E}\left( {{I_{\left\{ {L > {X_{{t_{N\left( S \right)}}}} \geqslant M} \right\}}}} \right) \\
-    & + {c_c}\mathbb{E}\left( {{I_{\left\{ {{X_{{t_{N\left( S \right)}}}} \geqslant L} \right\}}}} \right)
+    \mathbb{E}\left( {C\left( S \right)} \right) & = {c_i}\mathbb{E}\left( {N\left( S \right)} \right) + {c_p}\mathbb{E}\left( {{\mathbb{I}_{\left\{ {L > {X_{{t_{N\left( S \right)}}}} \geqslant M} \right\}}}} \right) \\
+    & + {c_c}\mathbb{E}\left( {{\mathbb{I}_{\left\{ {{X_{{t_{N\left( S \right)}}}} \geqslant L} \right\}}}} \right)
 \end{align*}
 
 Détaillons le nombre moyen d'inspection $\mathbb{E}\left( {N\left( S \right)} \right)$ :
@@ -546,7 +546,7 @@ Or
 Par conséquence, 
 \begin{align}
     \label{e_n_s_de}
-    \mathbb{E}\left( {N\left( S \right)} \right) & = 1 - {F_{\Delta T}}\left( M \right) \nonumber \\
+    & \mathbb{E}\left( {N\left( S \right)} \right) = 1 - {F_{\Delta T}}\left( M \right) \nonumber \\
     & + \sum\limits_{k = 2}^\infty  {k\left( {{F_{\left( {k - 1} \right)\Delta T}}\left( M \right) - \int_0^M {{F_{\Delta T}}\left( {M - \xi } \right){f_{\left( {k - 1} \right)\Delta T}}\left( \xi  \right)d\xi } } \right)}
 \end{align}
 
